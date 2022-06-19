@@ -1,15 +1,14 @@
 <?php
 
-namespace App\Services\DefaultBotTelegramHandle;
-
+namespace Icekristal\LaravelTelegram\Services\DefaultBotTelegramHandle;
 
 use Icekristal\LaravelTelegram\Services\MainTelegramHandle;
 
-class TextTelegramHandle extends MainTelegramHandle
+class CallbackQueryHandle extends MainTelegramHandle
 {
     public function __construct($data, $botInfo)
     {
         parent::__construct($data, $botInfo);
-        $text = $data['text'] ?? '';
+        $callbackQuery = $data['data'] ?? '';
     }
 }
