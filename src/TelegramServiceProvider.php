@@ -65,7 +65,7 @@ class TelegramServiceProvider extends ServiceProvider
     protected function publishDefaultHandlers()
     {
         $this->publishes([
-            __DIR__ . '/Services/DefaultBotTelegramHandle' => app_path('Services/DefaultBotTelegramHandle'),
+            __DIR__ . '/../app/Services' => app_path('Services'),
         ], 'ice_telegram_default_handlers');
     }
 
