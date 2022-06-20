@@ -2,6 +2,7 @@
 
 namespace Icekristal\LaravelTelegram\Services;
 
+use Icekristal\LaravelTelegram\Models\ServiceTelegram;
 use Illuminate\Support\Facades\Http;
 
 class IceTelegramService
@@ -11,6 +12,7 @@ class IceTelegramService
     public array $infoBot;
     public mixed $from;
     public mixed $type;
+    public mixed $owner;
     public mixed $callbackQuery = null;
 
 
@@ -57,10 +59,11 @@ class IceTelegramService
                 $this->callbackQuery = $this->data;
             }
 
+            $this->owner = ServiceTelegram::query()->where('chat_id', $this->from['id'])->first()?->owner ?? null;
+
             app()->setLocale($data['message']['from']['language_code'] ?? 'ru');
         }
     }
-
 
 
     public function sendMessage(array $params)
