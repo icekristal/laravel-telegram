@@ -5,10 +5,10 @@ use Icekristal\LaravelTelegram\Services\MainTelegramHandle;
 
 class PhotoHandle extends MainTelegramHandle
 {
-    public function __construct($data, $botInfo)
+    public function __construct($telegramService, $botInfo)
     {
-        parent::__construct($data, $botInfo);
-        $infoPhoto = $data['photo'] ?? null;
+        parent::__construct($telegramService, $botInfo);
+        $infoPhoto = $this->telegramService->data['photo'] ?? null;
         if (is_array($infoPhoto)) {
             $smallPhoto = $infoPhoto[0];
             $fullPhoto = $infoPhoto[1];

@@ -5,10 +5,10 @@ use Icekristal\LaravelTelegram\Services\MainTelegramHandle;
 
 class VideoNoteHandle extends MainTelegramHandle
 {
-    public function __construct($data, $botInfo)
+    public function __construct($telegramService, $botInfo)
     {
-        parent::__construct($data, $botInfo);
-        $infoVideoNote = $data['video_note'] ?? null;
+        parent::__construct($telegramService, $botInfo);
+        $infoVideoNote = $this->telegramService->data['video_note'] ?? null;
         $fileName = $infoVideoNote['file_name'] ?? "";
         $mimeType = $infoVideoNote['mime_type'] ?? "";
         //duration sec:  $infoVideo['duration']

@@ -53,13 +53,13 @@ class IceTelegramJob implements ShouldQueue
             $infoAnswerUser['only_message'] = __('telegram_service.technical_work');
         } else {
             $infoAnswerUser = match ($telegram->type) {
-                'video' => !is_null($this->infoBot['method_messages']['video']) ? (new $this->infoBot['method_messages']['video']($telegram->data, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
-                'video_note' => !is_null($this->infoBot['method_messages']['video_note']) ? (new $this->infoBot['method_messages']['video_note']($telegram->data, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
-                'voice' => !is_null($this->infoBot['method_messages']['voice']) ? (new $this->infoBot['method_messages']['voice']($telegram->data, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
-                'photo' => !is_null($this->infoBot['method_messages']['photo']) ? (new $this->infoBot['method_messages']['photo']($telegram->data, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
-                'document' => !is_null($this->infoBot['method_messages']['document']) ? (new $this->infoBot['method_messages']['document']($telegram->data, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
-                'text' => !is_null($this->infoBot['method_messages']['text']) ? (new $this->infoBot['method_messages']['text']($telegram->data, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
-                'callback_query' => !is_null($this->infoBot['method_callback_query']) ? (new $this->infoBot['method_callback_query']($telegram->callbackQuery, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->callbackQuery),
+                'video' => !is_null($this->infoBot['method_messages']['video']) ? (new $this->infoBot['method_messages']['video']($telegram, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
+                'video_note' => !is_null($this->infoBot['method_messages']['video_note']) ? (new $this->infoBot['method_messages']['video_note']($telegram, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
+                'voice' => !is_null($this->infoBot['method_messages']['voice']) ? (new $this->infoBot['method_messages']['voice']($telegram, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
+                'photo' => !is_null($this->infoBot['method_messages']['photo']) ? (new $this->infoBot['method_messages']['photo']($telegram, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
+                'document' => !is_null($this->infoBot['method_messages']['document']) ? (new $this->infoBot['method_messages']['document']($telegram, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
+                'text' => !is_null($this->infoBot['method_messages']['text']) ? (new $this->infoBot['method_messages']['text']($telegram, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
+                'callback_query' => !is_null($this->infoBot['method_callback_query']) ? (new $this->infoBot['method_callback_query']($telegram, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->callbackQuery),
                 default => []
             };
         }

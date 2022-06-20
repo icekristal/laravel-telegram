@@ -6,9 +6,9 @@ use Icekristal\LaravelTelegram\Services\MainTelegramHandle;
 
 class CallbackQueryHandle extends MainTelegramHandle
 {
-    public function __construct($data, $botInfo)
+    public function __construct($telegramService, $botInfo)
     {
-        parent::__construct($data, $botInfo);
-        $callbackQuery = $data['data'] ?? '';
+        parent::__construct($telegramService, $botInfo);
+        $callbackQuery = $this->telegramService->callbackQuery['data'] ?? '';
     }
 }

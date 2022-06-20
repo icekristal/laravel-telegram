@@ -6,10 +6,10 @@ use Icekristal\LaravelTelegram\Services\MainTelegramHandle;
 
 class DocumentHandle extends MainTelegramHandle
 {
-    public function __construct($data, $botInfo)
+    public function __construct($telegramService, $botInfo)
     {
-        parent::__construct($data, $botInfo);
-        $document = $data['document'] ?? '';
+        parent::__construct($telegramService, $botInfo);
+        $document = $this->telegramService->data['document'] ?? '';
         $fileName = $document['file_name'] ?? '';
         $mimeType = $document['mime_type'] ?? '';
 
