@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property float $amount
  * @property float $commission
  * @property string $who_type
+ * @property string $bot_key
  * @property integer $who_id
  * @property string $code_currency
  * @property string $signed_amount
@@ -32,7 +33,7 @@ class ServiceTelegram extends Model
 
 
     protected $fillable = [
-        'owner_type', 'owner_id', 'chat_id', 'username', 'alias', 'other_info'
+        'owner_type', 'owner_id', 'chat_id', 'username', 'alias', 'other_info', 'bot_key'
     ];
 
     /**

@@ -111,4 +111,13 @@ class IceTelegramService
         }
         return false;
     }
+
+    /**
+     * @param $botToken
+     * @return string
+     */
+    public static function hashBotToken($botToken): string
+    {
+        return md5($botToken);
+    }
 }

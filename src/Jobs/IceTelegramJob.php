@@ -42,6 +42,7 @@ class IceTelegramJob implements ShouldQueue
         if ($this->infoBot['is_save_database'] && isset($telegram->from['id'])) {
             ServiceTelegram::query()->updateOrCreate([
                 'chat_id' => $telegram->from['id'],
+                'bot_key' => IceTelegramService::hashBotToken($this->infoBot['token']),
             ],[
                 'username' => $telegram->from['username'] ?? null,
                 'alias' => $telegram->from['alias'] ?? null,
