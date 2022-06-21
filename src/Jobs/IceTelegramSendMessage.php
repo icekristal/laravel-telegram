@@ -25,6 +25,8 @@ class IceTelegramSendMessage implements ShouldQueue
     {
         if (is_null($botName)) {
             $this->botInfo = config('telegram_service.bots.' . config('telegram_service.default_bot'));
+        }else{
+            $this->botInfo = config('telegram_service.bots.' . $botName);
         }
         $this->additionalFile = $additionalFile;
         $this->params = [
