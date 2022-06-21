@@ -45,9 +45,9 @@ trait InteractsTelegramService
     public function sendTelegramMessage($message, $replyMarkup = '', array $additionalFile = [], $botName = null)
     {
         if (is_null($botName)) {
-            $botInfo = IceTelegramService::hashBotToken(config('telegram_service.bots.' . config('telegram_service.default_bot')));
+            $botInfo = config('telegram_service.bots.' . config('telegram_service.default_bot'));
         } else {
-            $botInfo = IceTelegramService::hashBotToken(config('telegram_service.bots.' . $botName));
+            $botInfo = config('telegram_service.bots.' . $botName);
         }
 
         dispatch(new IceTelegramSendMessage($this->telegram($botName)?->first()?->chat_id, $message, $replyMarkup = '', $additionalFile = [], $botName = null))
