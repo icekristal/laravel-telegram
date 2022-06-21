@@ -32,7 +32,12 @@ class User extends Model
     use InteractsTelegramService;
 }
 
-$modelUser->telegram()->chat_id;
+$modelUser->telegram->chat_id;
+```
+
+send message, if chat telegram have owner
+```php
+$modelUser->sendTelegramMessage('text message');
 ```
 
 in config:
