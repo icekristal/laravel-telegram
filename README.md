@@ -98,10 +98,14 @@ class MainTelegramHandle
     {
         return [
             'only_message' => $this->onlyMessage,
+            'callback_message' => $this->messageCallback,
             'message' => $this->message,
             'keyboard' => $this->keyboard,
             'image' => $this->image,
             'file' => $this->file,
+            'show_alert' => $this->showAlert,
+            'cache_time' => $this->cacheTime,
+            'url' => $this->url,
         ];
     }
 }
