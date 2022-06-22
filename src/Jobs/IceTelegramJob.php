@@ -43,7 +43,7 @@ class IceTelegramJob implements ShouldQueue
             ServiceTelegram::query()->updateOrCreate([
                 'chat_id' => $telegram->from['id'],
                 'bot_key' => IceTelegramService::hashBotToken($this->infoBot['token']),
-            ],[
+            ], [
                 'username' => $telegram->from['username'] ?? null,
                 'alias' => $telegram->from['alias'] ?? null,
             ]);
@@ -88,7 +88,24 @@ class IceTelegramJob implements ShouldQueue
 
 
         if (isset($infoAnswerUser['file'])) {
-            $infoAnswerUser->sendFile([], $infoAnswerUser['file']);
+            $telegram->sendDocument([], $infoAnswerUser['file']);
+        }
+
+        if ($telegram->type == 'callback_query' && isset($telegram->data['id'])) {
+            $paramCallback = [
+                'callback_query_id' => $telegram->data['id'],
+                'text' => $infoAnswerUser['callback_message'] ?? ' ',
+                'show_alert' => boolval($infoAnswerUser['show_alert']) ?? false
+            ];
+
+            if (isset($infoAnswerUser['url'])) {
+                $paramCallback['url'] = (string)$infoAnswerUser['url'];
+            }
+            if (isset($infoAnswerUser['cache_time'])) {
+                $paramCallback['cache_time'] = intval($infoAnswerUser['cache_time']);
+            }
+
+            $telegram->sendCallback($paramCallback);
         }
     }
 
