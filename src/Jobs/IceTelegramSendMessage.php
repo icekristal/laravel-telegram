@@ -25,14 +25,14 @@ class IceTelegramSendMessage implements ShouldQueue
     {
         if (is_null($botName)) {
             $this->botInfo = config('telegram_service.bots.' . config('telegram_service.default_bot'));
-        }else{
+        } else {
             $this->botInfo = config('telegram_service.bots.' . $botName);
         }
         $this->additionalFile = $additionalFile;
         $this->params = [
             'chat_id' => $chatId,
             'text' => $message,
-            'reply_markup' => $replyMarkup
+            'reply_markup' => $replyMarkup != '' ? json_encode($replyMarkup) : ''
         ];
     }
 
@@ -44,7 +44,7 @@ class IceTelegramSendMessage implements ShouldQueue
     {
         $telegram = new IceTelegramService($this->botInfo);
 
-        if(isset($this->additionalFile['type']) && isset($this->additionalFile['url'])) {
+        if (isset($this->additionalFile['type']) && isset($this->additionalFile['url'])) {
             $paramsForSend['chat_id'] = $this->params['chat_id'];
             if ($this->additionalFile['type'] == 'photo' && $this->additionalFile['url'] != '') {
                 $paramsForSend['photo'] = $this->additionalFile['url'];
