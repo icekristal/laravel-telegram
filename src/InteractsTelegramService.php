@@ -50,7 +50,7 @@ trait InteractsTelegramService
             $botInfo = config('telegram_service.bots.' . $botName);
         }
 
-        dispatch(new IceTelegramSendMessage($this->telegram($botName)?->first()?->chat_id, $message, $replyMarkup = '', $additionalFile = [], $botName = null))
+        dispatch(new IceTelegramSendMessage($this->telegram($botName)?->first()?->chat_id, $message, $replyMarkup, $additionalFile, $botName))
             ->onQueue($botInfo['queue'] ?? 'default');
     }
 }
