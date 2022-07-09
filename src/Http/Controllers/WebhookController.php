@@ -16,7 +16,7 @@ class WebhookController extends BaseController
         $botName = trim(Str::of($nameRoute)->after("wh_telegram."));
         $infoBot = config("telegram_service.bots.{$botName}") ?? null;
         if(!is_null($infoBot)) {
-            dispatch(new IceTelegramJob($request->all(), $infoBot))->onQueue($infoBot['queue'] ?? 'default');
+            dispatch(new IceTelegramJob($request->all(), $infoBot))->onQueue($infoBot['queue_webhook'] ?? 'default');
         }
         return new Response([true], 200);
     }

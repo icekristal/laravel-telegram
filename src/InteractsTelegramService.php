@@ -51,6 +51,6 @@ trait InteractsTelegramService
         }
 
         dispatch(new IceTelegramSendMessage($this->telegram($botName)?->first()?->chat_id, $message, $replyMarkup, $additionalFile, $botName))
-            ->onQueue($botInfo['queue'] ?? 'default');
+            ->onQueue($botInfo['queue_send'] ?? 'default');
     }
 }
