@@ -1,6 +1,6 @@
 <?php
 
-namespace Icekristal\LaravelTelegram\Services\DefaultBotTelegramHandle;
+namespace App\Services\DefaultBotTelegramHandle;
 use Icekristal\LaravelTelegram\Services\MainTelegramHandle;
 
 class VideoNoteHandle extends MainTelegramHandle
