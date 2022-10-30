@@ -105,7 +105,7 @@ class IceTelegramService
             $ext = explode(".", $urlFile);
             $lastInfo = end($ext);
             $name_our_new_file = "t_" . time() . "." . $lastInfo;
-            $fullPath = "public/{$this->infoBot['path_save_files']}" . $name_our_new_file;
+            $fullPath = "{$this->infoBot['path_save_files']}" . $name_our_new_file;
             copy($urlFile, $fullPath);
             return $this->infoBot['path_save_files'] . $name_our_new_file;
         }
