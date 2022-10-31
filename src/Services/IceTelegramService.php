@@ -131,6 +131,9 @@ class IceTelegramService
         if (isset($params['caption'])) {
             $paramsSend['caption'] = $params['caption'] ?? '';
         }
+        if (isset($params['file_id'])) {
+            $paramsSend['file_id'] = $params['file_id'] ?? '';
+        }
         if (isset($params['caption_entities'])) {
             $paramsSend['caption_entities'] = $params['caption_entities'] ?? '';
         }
@@ -159,6 +162,9 @@ class IceTelegramService
         }
         if (isset($params['caption_entities'])) {
             $paramsSend['caption_entities'] = $params['caption_entities'] ?? '';
+        }
+        if (isset($params['file_id'])) {
+            $paramsSend['file_id'] = $params['file_id'] ?? '';
         }
         if (isset($params['reply_markup'])) {
             $paramsSend['reply_markup'] = json_encode($params['reply_markup']) ?? '';
