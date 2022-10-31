@@ -74,10 +74,11 @@ trait InteractsTelegramService
      * Удаляем сообщение
      *
      * @param $messageId
-     * @param $botName
+     * @param null $chatId
+     * @param null $botName
      * @return Response
      */
-    public function deleteTelegramMessage($messageId, $botName = null)
+    public function deleteTelegramMessage($messageId, $chatId = null ,$botName = null)
     {
         if (is_null($botName)) {
             $botInfo = config('telegram_service.bots.' . config('telegram_service.default_bot'));
@@ -87,7 +88,7 @@ trait InteractsTelegramService
 
         return (new IceTelegramService($botInfo))->deleteMessage([
             'message_id' => intval($messageId),
-            'chat_id' => $this->telegram($botName)?->first()?->chat_id
+            'chat_id' => is_null($chatId) ? $this->telegram($botName)?->first()?->chat_id : $chatId
         ]);
     }
 
