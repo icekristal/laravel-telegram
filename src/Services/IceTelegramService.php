@@ -202,7 +202,7 @@ class IceTelegramService
     public static function saveAnswer($answerInfo, $infoBot, $owner = null)
     {
         try {
-            if ($infoBot['is_save_answer'] && !is_null($answerInfo) && $answerInfo['ok']) {
+            if (isset($infoBot['is_save_answer']) && $infoBot['is_save_answer'] && !is_null($answerInfo) && $answerInfo['ok']) {
 
                 if (!is_null($owner)) {
                     $owner->ownerTelegramMessages()->create([
@@ -229,7 +229,7 @@ class IceTelegramService
     public static function saveMessage($data, $infoBot, $owner = null)
     {
         try {
-            if ($infoBot['is_save_answer'] && !is_null($data['message_id'])) {
+            if (isset($infoBot['is_save_answer']) &&  $infoBot['is_save_answer'] && !is_null($data['message_id'])) {
 
                 if (!is_null($owner)) {
                     $owner->ownerTelegramMessages()->create([
