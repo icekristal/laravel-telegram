@@ -39,14 +39,6 @@ trait InteractsTelegramService
     }
 
     /**
-     * @return MorphTo
-     */
-    public function owner(): MorphTo
-    {
-        return $this->morphTo();
-    }
-
-    /**
      * @param $message
      * @param string $replyMarkup
      * @param array $additionalFile
@@ -63,7 +55,7 @@ trait InteractsTelegramService
         }
 
         if (is_null($ownerMessage)) {
-            $ownerMessage = $this->owner() ?? null;
+            $ownerMessage = $this ?? null;
         }
 
         dispatch(new IceTelegramSendMessage($this->telegram($botName)?->first()?->chat_id, $message, $replyMarkup, $additionalFile, $botName, $ownerMessage))
