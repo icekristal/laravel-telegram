@@ -7,6 +7,7 @@ use Icekristal\LaravelTelegram\Models\ServiceTelegram;
 use Icekristal\LaravelTelegram\Services\IceTelegramService;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Http\Client\Response;
 
 trait InteractsTelegramService
 {
@@ -37,12 +38,13 @@ trait InteractsTelegramService
 
     /**
      * @param $message
-     * @param $replyMarkup
+     * @param string $replyMarkup
      * @param array $additionalFile
-     * @param $botName
+     * @param null $botName
+     * @param null $ownerMessage
      * @return void
      */
-    public function sendTelegramMessage($message, $replyMarkup = '', array $additionalFile = [], $botName = null)
+    public function sendTelegramMessage($message, $replyMarkup = '', array $additionalFile = [], $botName = null, $ownerMessage = null): void
     {
         if (is_null($botName)) {
             $botInfo = config('telegram_service.bots.' . config('telegram_service.default_bot'));
@@ -50,7 +52,28 @@ trait InteractsTelegramService
             $botInfo = config('telegram_service.bots.' . $botName);
         }
 
-        dispatch(new IceTelegramSendMessage($this->telegram($botName)?->first()?->chat_id, $message, $replyMarkup, $additionalFile, $botName))
+        dispatch(new IceTelegramSendMessage($this->telegram($botName)?->first()?->chat_id, $message, $replyMarkup, $additionalFile, $botName, $ownerMessage))
             ->onQueue($botInfo['queue_send'] ?? 'default');
+    }
+
+    /**
+     * Удаляем сообщение
+     *
+     * @param $messageId
+     * @param $botName
+     * @return Response
+     */
+    public function deleteTelegramMessage($messageId, $botName = null)
+    {
+        if (is_null($botName)) {
+            $botInfo = config('telegram_service.bots.' . config('telegram_service.default_bot'));
+        } else {
+            $botInfo = config('telegram_service.bots.' . $botName);
+        }
+
+        return (new IceTelegramService($botInfo))->deleteMessage([
+            'message_id' => intval($messageId),
+            'chat_id' => $this->telegram($botName)?->first()?->chat_id
+        ]);
     }
 }

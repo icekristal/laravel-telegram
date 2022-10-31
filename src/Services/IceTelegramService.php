@@ -3,7 +3,9 @@
 namespace Icekristal\LaravelTelegram\Services;
 
 use Icekristal\LaravelTelegram\Models\ServiceTelegram;
+use Icekristal\LaravelTelegram\Models\ServiceTelegramOwnerMessage;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class IceTelegramService
 {
@@ -61,6 +63,8 @@ class IceTelegramService
 
             $this->owner = ServiceTelegram::query()->where('chat_id', $this->from['id'])->first()?->owner ?? null;
 
+            self::saveMessage($this->data, $this->infoBot, $this->owner);
+
             app()->setLocale($data['message']['from']['language_code'] ?? 'ru');
         }
     }
@@ -68,12 +72,19 @@ class IceTelegramService
 
     public function sendMessage(array $params)
     {
-        Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/sendMessage', $params);
+        $answer = Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/sendMessage', $params);
+        self::saveAnswer($answer, $this->infoBot);
+        return $answer;
+    }
+
+    public function deleteMessage(array $params)
+    {
+        return Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/deleteMessage', $params);
     }
 
     public function sendCallback(array $params)
     {
-        Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/answerCallbackQuery', $params);
+        return Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/answerCallbackQuery', $params);
     }
 
     public function sendQR(array $params, string $text)
@@ -82,11 +93,60 @@ class IceTelegramService
         Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/sendPhoto', $params);
     }
 
+    public function sendLocation(array $params)
+    {
+        $paramsSend['chat_id'] = $params['chat_id'] ?? $this->from['id'];
+        $paramsSend['latitude'] = $params['latitude'];
+        $paramsSend['longitude'] = $params['longitude'];
+
+        if (isset($params['live_period'])) {
+            $paramsSend['live_period'] = $params['live_period'] ?? '';
+        }
+        if (isset($params['reply_markup'])) {
+            $paramsSend['reply_markup'] = json_encode($params['reply_markup']) ?? '';
+        }
+        if (isset($params['horizontal_accuracy'])) {
+            $paramsSend['horizontal_accuracy'] = $params['horizontal_accuracy'] ?? '';
+        }
+        if (isset($params['proximity_alert_radius'])) {
+            $paramsSend['proximity_alert_radius'] = $params['proximity_alert_radius'] ?? '';
+        }
+        if (isset($params['disable_notification'])) {
+            $paramsSend['disable_notification'] = $params['disable_notification'] ?? false;
+        }
+        if (isset($params['protect_content'])) {
+            $paramsSend['protect_content'] = $params['protect_content'] ?? false;
+        }
+        if (isset($params['reply_to_message_id'])) {
+            $paramsSend['reply_to_message_id'] = intval($params['reply_to_message_id']);
+        }
+
+        return Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/sendLocation', $paramsSend);
+    }
+
     public function sendPhoto(array $params, string $url)
     {
         $paramsSend['photo'] = $url;
         $paramsSend['chat_id'] = $params['chat_id'] ?? $this->from['id'];
-        Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/sendPhoto', $paramsSend);
+        if (isset($params['caption'])) {
+            $paramsSend['caption'] = $params['caption'] ?? '';
+        }
+        if (isset($params['caption_entities'])) {
+            $paramsSend['caption_entities'] = $params['caption_entities'] ?? '';
+        }
+        if (isset($params['reply_markup'])) {
+            $paramsSend['reply_markup'] = json_encode($params['reply_markup']) ?? '';
+        }
+        if (isset($params['protect_content'])) {
+            $paramsSend['protect_content'] = $params['protect_content'] ?? false;
+        }
+        if (isset($params['reply_to_message_id'])) {
+            $paramsSend['reply_to_message_id'] = intval($params['reply_to_message_id']);
+        }
+
+        $answer = Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/sendPhoto', $paramsSend);
+        self::saveAnswer($answer, $this->infoBot);
+        return $answer;
     }
 
 
@@ -94,7 +154,25 @@ class IceTelegramService
     {
         $paramsSend['chat_id'] = $params['chat_id'] ?? $this->from['id'];
         $paramsSend['document'] = $filePath;
-        Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/sendDocument', $paramsSend);
+        if (isset($params['caption'])) {
+            $paramsSend['caption'] = $params['caption'] ?? '';
+        }
+        if (isset($params['caption_entities'])) {
+            $paramsSend['caption_entities'] = $params['caption_entities'] ?? '';
+        }
+        if (isset($params['reply_markup'])) {
+            $paramsSend['reply_markup'] = json_encode($params['reply_markup']) ?? '';
+        }
+        if (isset($params['protect_content'])) {
+            $paramsSend['protect_content'] = $params['protect_content'] ?? false;
+        }
+        if (isset($params['reply_to_message_id'])) {
+            $paramsSend['reply_to_message_id'] = intval($params['reply_to_message_id']);
+        }
+
+        $answer = Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/sendDocument', $paramsSend);
+        self::saveAnswer($answer, $this->infoBot);
+        return $answer;
     }
 
     public function getPathFile($fileId): bool|string
@@ -119,5 +197,59 @@ class IceTelegramService
     public static function hashBotToken($botToken): string
     {
         return md5($botToken);
+    }
+
+    public static function saveAnswer($answerInfo, $infoBot, $owner = null)
+    {
+        try {
+            if ($infoBot['is_save_answer'] && !is_null($answerInfo) && $answerInfo['ok']) {
+
+                if (!is_null($owner)) {
+                    $owner->ownerTelegramMessages()->create([
+                        'message_id' => $answerInfo['result']['message_id'],
+                        'bot_key' => IceTelegramService::hashBotToken($infoBot['token']) ?? null,
+                        'chat_id' => $answerInfo['result']['chat']['id'],
+                        'other_info' => $answerInfo['result'],
+                    ]);
+                } else {
+                    ServiceTelegramOwnerMessage::query()->create([
+                        'message_id' => $answerInfo['result']['message_id'],
+                        'bot_key' => IceTelegramService::hashBotToken($infoBot['token']) ?? null,
+                        'chat_id' => $answerInfo['result']['chat']['id'],
+                        'other_info' => $answerInfo['result'],
+                    ]);
+                }
+            }
+
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+        }
+    }
+
+    public static function saveMessage($data, $infoBot, $owner = null)
+    {
+        try {
+            if ($infoBot['is_save_answer'] && !is_null($data['message_id'])) {
+
+                if (!is_null($owner)) {
+                    $owner->ownerTelegramMessages()->create([
+                        'message_id' => $data['message_id'],
+                        'bot_key' => IceTelegramService::hashBotToken($infoBot['token']) ?? null,
+                        'chat_id' => $data['chat']['id'],
+                        'other_info' => $data,
+                    ]);
+                } else {
+                    ServiceTelegramOwnerMessage::query()->create([
+                        'message_id' => $data['message_id'],
+                        'bot_key' => IceTelegramService::hashBotToken($infoBot['token']) ?? null,
+                        'chat_id' => $data['chat']['id'],
+                        'other_info' => $data,
+                    ]);
+                }
+            }
+
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+        }
     }
 }
