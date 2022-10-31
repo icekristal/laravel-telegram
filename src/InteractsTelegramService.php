@@ -63,7 +63,7 @@ trait InteractsTelegramService
         }
 
         if (is_null($ownerMessage)) {
-            $ownerMessage = $this->owner();
+            $ownerMessage = $this->owner() ?? null;
         }
 
         dispatch(new IceTelegramSendMessage($this->telegram($botName)?->first()?->chat_id, $message, $replyMarkup, $additionalFile, $botName, $ownerMessage))
