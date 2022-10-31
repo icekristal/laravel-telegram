@@ -41,7 +41,7 @@ trait InteractsTelegramService
     /**
      * @return MorphTo
      */
-    public function ownerTelegram(): MorphTo
+    public function owner(): MorphTo
     {
         return $this->morphTo();
     }
