@@ -8,6 +8,7 @@ use Icekristal\LaravelTelegram\Models\ServiceTelegramOwnerMessage;
 use Icekristal\LaravelTelegram\Services\IceTelegramService;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Http\Client\Response;
 
 trait InteractsTelegramService
@@ -38,6 +39,14 @@ trait InteractsTelegramService
     }
 
     /**
+     * @return MorphTo
+     */
+    public function ownerTelegram(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    /**
      * @param $message
      * @param string $replyMarkup
      * @param array $additionalFile
@@ -51,6 +60,10 @@ trait InteractsTelegramService
             $botInfo = config('telegram_service.bots.' . config('telegram_service.default_bot'));
         } else {
             $botInfo = config('telegram_service.bots.' . $botName);
+        }
+
+        if (is_null($ownerMessage)) {
+            $ownerMessage = $this->ownerTelegram();
         }
 
         dispatch(new IceTelegramSendMessage($this->telegram($botName)?->first()?->chat_id, $message, $replyMarkup, $additionalFile, $botName, $ownerMessage))
