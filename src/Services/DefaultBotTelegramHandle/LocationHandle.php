@@ -13,6 +13,5 @@ class LocationHandle extends MainTelegramHandle
         $latitude = $infoVoice['latitude'] ?? "";
         $longitude = $infoVoice['longitude'] ?? "";
         $live_period = $infoVoice['live_period'] ?? "";
-        //$saveAndGetPathFile = (new IceTelegramService($botInfo))->getPathFile($infoVoice['file_id']);
     }
 }
