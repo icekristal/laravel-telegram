@@ -10,8 +10,8 @@ class LocationHandle extends MainTelegramHandle
     {
         parent::__construct($telegramService, $botInfo);
         $infoLocation = $this->telegramService->data['location'] ?? null;
-        $latitude = $infoVoice['latitude'] ?? "";
-        $longitude = $infoVoice['longitude'] ?? "";
-        $live_period = $infoVoice['live_period'] ?? "";
+        $latitude = $infoLocation['latitude'] ?? "";
+        $longitude = $infoLocation['longitude'] ?? "";
+        $live_period = $infoLocation['live_period'] ?? "";
     }
 }
