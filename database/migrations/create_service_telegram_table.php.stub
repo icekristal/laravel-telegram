@@ -1,0 +1,22 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('service_telegram', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('bot_key');
+            $table->nullableMorphs('owner');
+            $table->bigInteger('chat_id');
+            $table->string('username')->nullable();
+            $table->string('alias')->nullable();
+            $table->json('other_info')->nullable();
+            $table->timestamps();
+        });
+    }
+};

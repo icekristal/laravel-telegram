@@ -1,0 +1,29 @@
+{
+    "name": "icekristal/laravel-telegram",
+    "description": "Laravel Telegram Handle",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "icekristal",
+            "email": "savatneev-anton@mail.ru"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": "^8.0",
+        "laravel/framework": "^8|^9"
+    },
+    "autoload": {
+        "psr-4": {
+            "Icekristal\\LaravelTelegram\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Icekristal\\LaravelTelegram\\TelegramServiceProvider"
+            ]
+        }
+    }
+}
