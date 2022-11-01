@@ -72,9 +72,13 @@ class IceTelegramService
 
     public function sendMessage(array $params)
     {
-        $answer = Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/sendMessage', $params);
-        self::saveAnswer($answer, $this->infoBot);
-        return $answer;
+        if (isset($params['text']) && !is_null($params['text']) && $params['text'] != '' && $params['text'] != ' ') {
+            $answer = Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/sendMessage', $params);
+            self::saveAnswer($answer, $this->infoBot);
+            return $answer;
+        }
+        return false;
+
     }
 
     public function deleteMessage(array $params)
@@ -208,7 +212,7 @@ class IceTelegramService
     public static function saveAnswer($answerInfo, $infoBot, $owner = null)
     {
         try {
-            if (isset($infoBot['is_save_answer']) && $infoBot['is_save_answer']  && isset($answerInfo['result']['message_id']) && !is_null($answerInfo['result']['message_id']) && !is_null($answerInfo) && $answerInfo['ok']) {
+            if (isset($infoBot['is_save_answer']) && $infoBot['is_save_answer'] && isset($answerInfo['result']['message_id']) && !is_null($answerInfo['result']['message_id']) && !is_null($answerInfo) && $answerInfo['ok']) {
 
                 if (!is_null($owner)) {
                     $owner->ownerTelegramMessages()->create([
@@ -235,7 +239,7 @@ class IceTelegramService
     public static function saveMessage($data, $infoBot, $owner = null)
     {
         try {
-            if (isset($infoBot['is_save_answer']) &&  $infoBot['is_save_answer'] && isset($data['message_id']) && !is_null($data['message_id'])) {
+            if (isset($infoBot['is_save_answer']) && $infoBot['is_save_answer'] && isset($data['message_id']) && !is_null($data['message_id'])) {
 
                 if (!is_null($owner) && isset($data['message_id'])) {
                     $owner->ownerTelegramMessages()->create([

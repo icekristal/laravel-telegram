@@ -65,6 +65,8 @@ class IceTelegramSendMessage implements ShouldQueue
 
     private function saveAnswer($answerInfo)
     {
-        IceTelegramService::saveAnswer($answerInfo, $this->botInfo, $this->ownerAnswer);
+        if ($answerInfo) {
+            IceTelegramService::saveAnswer($answerInfo, $this->botInfo, $this->ownerAnswer);
+        }
     }
 }
