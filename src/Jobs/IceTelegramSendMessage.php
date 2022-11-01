@@ -52,15 +52,22 @@ class IceTelegramSendMessage implements ShouldQueue
     {
         $telegram = new IceTelegramService($this->botInfo);
         $paramsForSend = $this->additionalFile;
-        if (isset($this->additionalFile['type']) && isset($this->additionalFile['url'])) {
+        if (isset($this->additionalFile['type'])) {
             $paramsForSend['chat_id'] = $this->params['chat_id'];
-            if ($this->additionalFile['type'] == 'photo' && $this->additionalFile['url'] != '') {
-                $paramsForSend['photo'] = $this->additionalFile['url'];
-                $this->saveAnswer($telegram->sendPhoto($paramsForSend, $this->additionalFile['url']));
+
+            if(isset($this->additionalFile['url'])) {
+                if ($this->additionalFile['type'] == 'photo' && $this->additionalFile['url'] != '') {
+                    $paramsForSend['photo'] = $this->additionalFile['url'];
+                    $this->saveAnswer($telegram->sendPhoto($paramsForSend, $this->additionalFile['url']));
+                }
+                if ($this->additionalFile['type'] == 'document' && $this->additionalFile['url'] != '') {
+                    $paramsForSend['document'] = $this->additionalFile['url'];
+                    $this->saveAnswer($telegram->sendDocument($paramsForSend, $this->additionalFile['url']));
+                }
             }
-            if ($this->additionalFile['type'] == 'document' && $this->additionalFile['url'] != '') {
-                $paramsForSend['document'] = $this->additionalFile['url'];
-                $this->saveAnswer($telegram->sendDocument($paramsForSend, $this->additionalFile['url']));
+
+            if($this->additionalFile['type'] == 'location' && isset($this->additionalFile['latitude']) && isset($this->additionalFile['longitude'])) {
+                $this->saveAnswer($telegram->sendLocation($paramsForSend));
             }
         }
 

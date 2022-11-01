@@ -101,7 +101,7 @@ class IceTelegramService
 
     public function sendLocation(array $params)
     {
-        $paramsSend['chat_id'] = $params['chat_id'] ?? $this->from['id'];
+        $paramsSend['chat_id'] = $params['chat_id'] ?? $this->from['id'] ?? null;
         $paramsSend['latitude'] = $params['latitude'];
         $paramsSend['longitude'] = $params['longitude'];
 
