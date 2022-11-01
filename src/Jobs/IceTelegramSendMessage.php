@@ -38,6 +38,10 @@ class IceTelegramSendMessage implements ShouldQueue
             'text' => $message,
             'reply_markup' => $replyMarkup != '' ? json_encode($replyMarkup) : ''
         ];
+
+        if (isset($additionalFile['reply_to_message_id'])) {
+            $this->params['reply_to_message_id'] = $additionalFile['reply_to_message_id'];
+        }
     }
 
     /**
