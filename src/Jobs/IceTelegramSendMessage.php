@@ -32,7 +32,7 @@ class IceTelegramSendMessage implements ShouldQueue
             $this->botInfo = config('telegram_service.bots.' . $botName);
         }
         $this->additionalFile = $additionalFile;
-        $this->ownerAnswer = $ownerAnswer;
+        $this->ownerAnswer = !is_null($ownerAnswer) ? get_class($ownerAnswer)::query()->find($ownerAnswer->id) : null;
         $this->params = [
             'chat_id' => $chatId,
             'text' => $message,
