@@ -58,8 +58,13 @@ trait InteractsTelegramService
             $ownerMessage = $this ?? null;
         }
 
-        dispatch(new IceTelegramSendMessage($this->telegram($botName)?->first()?->chat_id, $message, $replyMarkup, $additionalFile, $botName, $ownerMessage))
-            ->onQueue($botInfo['queue_send'] ?? 'default');
+        $infoTelegram = $this->telegram($botName)?->first();
+        if(!is_null($infoTelegram)) {
+            dispatch(new IceTelegramSendMessage($infoTelegram?->chat_id, $message, $replyMarkup, $additionalFile, $botName, $ownerMessage))
+                ->onQueue($botInfo['queue_send'] ?? 'default');
+        }
+
+
     }
 
     /**
