@@ -194,7 +194,8 @@ class IceTelegramService
             $urlFile = "https://api.telegram.org/file/bot" . $this->infoBot['token'] . "/{$infoFile['result']['file_path']}";
             $ext = explode(".", $urlFile);
             $lastInfo = end($ext);
-            $name_our_new_file = "t_" . time() . "." . $lastInfo;
+            $nameTemp = time()."_".rand(100000, 999999);
+            $name_our_new_file = "t_" . $nameTemp . "." . $lastInfo;
             $fullPath = "{$this->infoBot['path_save_files']}" . $name_our_new_file;
             copy($urlFile, $fullPath);
             return $this->infoBot['path_save_files'] . $name_our_new_file;
