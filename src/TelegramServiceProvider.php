@@ -2,6 +2,7 @@
 
 namespace Icekristal\LaravelTelegram;
 
+use Icekristal\LaravelTelegram\Services\HighIceTelegramService;
 use Illuminate\Support\ServiceProvider;
 
 class TelegramServiceProvider extends ServiceProvider
@@ -9,6 +10,7 @@ class TelegramServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        $this->app->bind('ice.chain.gateway.api', HighIceTelegramService::class);
         $this->registerConfig();
         $this->registerTranslations();
         $this->registerRoutes();

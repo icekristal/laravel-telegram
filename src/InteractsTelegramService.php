@@ -14,6 +14,15 @@ use Illuminate\Http\Client\Response;
 trait InteractsTelegramService
 {
     /**
+     * Для нотификаций по чат ID телеги
+     * @return string
+     */
+    public function routeNotificationForTelegram(): string
+    {
+        return $this->telegram->chat_id;
+    }
+
+    /**
      *
      * @param null $botName
      * @return MorphOne
