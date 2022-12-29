@@ -2,6 +2,7 @@
 
 namespace Icekristal\LaravelTelegram\Services;
 
+use Icekristal\LaravelTelegram\Facades\IceTelegram;
 use Icekristal\LaravelTelegram\Models\ServiceTelegram;
 use Icekristal\LaravelTelegram\Models\ServiceTelegramOwnerMessage;
 use Illuminate\Support\Facades\Http;
@@ -72,119 +73,49 @@ class IceTelegramService
     }
 
 
-    public function sendMessage(array $params)
+    public function sendMessage(array $params): void
     {
-        if (isset($params['text']) && !is_null($params['text']) && $params['text'] != '' && $params['text'] != ' ') {
-            $answer = Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/sendMessage', $params);
-            self::saveAnswer($answer, $this->infoBot);
-            return $answer;
-        }
-        return false;
-
+        IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendMessage();
     }
 
-    public function deleteMessage(array $params)
+    public function deleteMessage(array $params): void
     {
-        return Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/deleteMessage', $params);
+        IceTelegram::setInfoBot($this->infoBot)->setParams($params)->deleteMessage();
     }
 
     public function sendCallback(array $params)
     {
-        return Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/answerCallbackQuery', $params);
+        IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendCallback();
     }
 
-    public function sendQR(array $params, string $text)
+    public function sendQR(array $params, string $text): void
     {
-        $params['photo'] = 'https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl=' . $text;
-        Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/sendPhoto', $params);
+        $params['text'] = $text;
+        IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendQR();
     }
 
     public function sendLocation(array $params)
     {
+        $paramsSend = $params;
         $paramsSend['chat_id'] = $params['chat_id'] ?? $this->from['id'] ?? null;
         $paramsSend['latitude'] = $params['latitude'];
         $paramsSend['longitude'] = $params['longitude'];
-
-        if (isset($params['live_period'])) {
-            $paramsSend['live_period'] = $params['live_period'] ?? '';
-        }
-        if (isset($params['reply_markup'])) {
-            $paramsSend['reply_markup'] = json_encode($params['reply_markup']) ?? '';
-        }
-        if (isset($params['horizontal_accuracy'])) {
-            $paramsSend['horizontal_accuracy'] = $params['horizontal_accuracy'] ?? '';
-        }
-        if (isset($params['proximity_alert_radius'])) {
-            $paramsSend['proximity_alert_radius'] = $params['proximity_alert_radius'] ?? '';
-        }
-        if (isset($params['disable_notification'])) {
-            $paramsSend['disable_notification'] = $params['disable_notification'] ?? false;
-        }
-        if (isset($params['protect_content'])) {
-            $paramsSend['protect_content'] = $params['protect_content'] ?? false;
-        }
-        if (isset($params['reply_to_message_id'])) {
-            $paramsSend['reply_to_message_id'] = intval($params['reply_to_message_id']);
-        }
-
-        return Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/sendLocation', $paramsSend);
+        IceTelegram::setInfoBot($this->infoBot)->setParams($paramsSend)->sendLocation();
     }
 
-    public function sendPhoto(array $params, string $url)
+    public function sendPhoto(array $params, string $url): void
     {
-        $paramsSend['photo'] = $url;
-        $paramsSend['chat_id'] = $params['chat_id'] ?? $this->from['id'];
-        if (isset($params['caption'])) {
-            $paramsSend['caption'] = $params['caption'] ?? '';
-        }
-        if (isset($params['file_id'])) {
-            $paramsSend['file_id'] = $params['file_id'] ?? '';
-        }
-        if (isset($params['caption_entities'])) {
-            $paramsSend['caption_entities'] = $params['caption_entities'] ?? '';
-        }
-        if (isset($params['reply_markup'])) {
-            $paramsSend['reply_markup'] = json_encode($params['reply_markup']) ?? '';
-        }
-        if (isset($params['protect_content'])) {
-            $paramsSend['protect_content'] = $params['protect_content'] ?? false;
-        }
-        if (isset($params['reply_to_message_id'])) {
-            $paramsSend['reply_to_message_id'] = intval($params['reply_to_message_id']);
-        }
-
-        $answer = Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/sendPhoto', $paramsSend);
-        self::saveAnswer($answer, $this->infoBot);
-        return $answer;
+        $params['photo'] = $url;
+        $params['chat_id'] = $params['chat_id'] ?? $this->from['id'];
+        IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendPhoto();
     }
 
 
-    public function sendDocument(array $params, string $filePath)
+    public function sendDocument(array $params, string $filePath): void
     {
-        $paramsSend['chat_id'] = $params['chat_id'] ?? $this->from['id'];
-        $paramsSend['document'] = $filePath;
-        if (isset($params['caption'])) {
-            $paramsSend['caption'] = $params['caption'] ?? '';
-        }
-        if (isset($params['caption_entities'])) {
-            $paramsSend['caption_entities'] = $params['caption_entities'] ?? '';
-        }
-        if (isset($params['file_id'])) {
-            $paramsSend['file_id'] = $params['file_id'] ?? '';
-        }
-        if (isset($params['reply_markup'])) {
-            $paramsSend['reply_markup'] = json_encode($params['reply_markup']) ?? '';
-        }
-        if (isset($params['protect_content'])) {
-            $paramsSend['protect_content'] = $params['protect_content'] ?? false;
-        }
-        if (isset($params['reply_to_message_id'])) {
-            $paramsSend['reply_to_message_id'] = intval($params['reply_to_message_id']);
-        }
-
-        $answer = Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/sendDocument', $paramsSend);
-        self::saveAnswer($answer, $this->infoBot);
-        return $answer;
+        $params['chat_id'] = $params['chat_id'] ?? $this->from['id'];
+        $params['document'] = $filePath;
+        IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendDocument();
     }
 
     public function getPathFile($fileId): bool|string

@@ -9,10 +9,12 @@ class HighIceTelegramService
 {
     private ?array $infoBot = null;
 
-    private mixed $chatId;
+    private mixed $chatId = null;
 
     public string $partUrl = '/sendMessage';
     public array $params = [];
+
+    private mixed $owner = null;
 
 
     /**
@@ -218,18 +220,17 @@ class HighIceTelegramService
 
     /**
      * @param $answer
-     * @param $owner
      * @return void
      */
-    private function saveAnswer($answer, $owner = null): void
+    private function saveAnswer($answer): void
     {
         try {
             if (!(isset($this->infoBot['is_save_answer']) && $this->infoBot['is_save_answer'] && isset($answer['result']['message_id']) && !is_null($answer) && $answer['ok'])) {
                 return;
             }
 
-            if (!is_null($owner)) {
-                $owner->ownerTelegramMessages()->create([
+            if (!is_null($this->owner)) {
+                $this->owner->ownerTelegramMessages()->create([
                     'message_id' => $answer['result']['message_id'],
                     'bot_key' => IceTelegramService::hashBotToken($answer['token']) ?? null,
                     'chat_id' => $answer['result']['chat']['id'],
@@ -246,5 +247,23 @@ class HighIceTelegramService
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
         }
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getOwner(): mixed
+    {
+        return $this->owner;
+    }
+
+    /**
+     * @param mixed $owner
+     * @return HighIceTelegramService
+     */
+    public function setOwner(mixed $owner = null): HighIceTelegramService
+    {
+        $this->owner = $owner;
+        return $this;
     }
 }

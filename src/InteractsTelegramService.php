@@ -2,6 +2,7 @@
 
 namespace Icekristal\LaravelTelegram;
 
+use Icekristal\LaravelTelegram\Facades\IceTelegram;
 use Icekristal\LaravelTelegram\Jobs\IceTelegramSendMessage;
 use Icekristal\LaravelTelegram\Models\ServiceTelegram;
 use Icekristal\LaravelTelegram\Models\ServiceTelegramOwnerMessage;
@@ -82,19 +83,18 @@ trait InteractsTelegramService
      * @param $messageId
      * @param null $chatId
      * @param null $botName
-     * @return Response
+     * @return Services\HighIceTelegramService
      */
-    public function deleteTelegramMessage($messageId, $chatId = null ,$botName = null)
+    public function deleteTelegramMessage($messageId, $chatId = null ,$botName = null): Services\HighIceTelegramService
     {
         if (is_null($botName)) {
             $botInfo = config('telegram_service.bots.' . config('telegram_service.default_bot'));
         } else {
             $botInfo = config('telegram_service.bots.' . $botName);
         }
-
-        return (new IceTelegramService($botInfo))->deleteMessage([
+        $chatId = is_null($chatId) ? $this->telegram($botName)?->first()?->chat_id : $chatId;
+        return IceTelegram::setInfoBot($botInfo)->setChatId($chatId)->setParams([
             'message_id' => intval($messageId),
-            'chat_id' => is_null($chatId) ? $this->telegram($botName)?->first()?->chat_id : $chatId
         ]);
     }
 
