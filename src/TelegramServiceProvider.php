@@ -10,7 +10,7 @@ class TelegramServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $this->app->bind('ice.chain.gateway.api', HighIceTelegramService::class);
+        $this->app->bind('high.ice.telegram', HighIceTelegramService::class);
         $this->registerConfig();
         $this->registerTranslations();
         $this->registerRoutes();
