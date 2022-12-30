@@ -110,3 +110,33 @@ class MainTelegramHandle
     }
 }
 ```
+
+
+v3 >  
+Notification
+```php
+    public function via($notifiable): array
+    {
+        return [\Icekristal\LaravelTelegram\Channels\TelegramChannel::class];
+    }
+
+    public function toTelegram($notifiable): WhatsAppMessage
+    {
+        return (new \Icekristal\LaravelTelegram\Channels\Messages\TelegramMessage())->content("Text");
+    }
+```
+
+Facede Telegram:
+```php
+IceTelegram::setInfoBot(array $infoBot);
+IceTelegram::setChatId(mixed $chatId);
+IceTelegram::setParams(array $params);
+IceTelegram::setOwner(array $owner);
+IceTelegram::sendMessage();
+IceTelegram::deleteMessage();
+IceTelegram::sendCallback();
+IceTelegram::sendPhoto();
+IceTelegram::sendDocument();
+IceTelegram::sendLocation();
+IceTelegram::sendQR();
+```
