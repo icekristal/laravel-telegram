@@ -120,7 +120,7 @@ Notification
         return [\Icekristal\LaravelTelegram\Channels\TelegramChannel::class];
     }
 
-    public function toTelegram($notifiable): WhatsAppMessage
+    public function toTelegram($notifiable): TelegramMessage
     {
         return (new \Icekristal\LaravelTelegram\Channels\Messages\TelegramMessage())->content("Text");
     }
