@@ -9,8 +9,6 @@ use Icekristal\LaravelTelegram\Models\ServiceTelegramOwnerMessage;
 use Icekristal\LaravelTelegram\Services\IceTelegramService;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Http\Client\Response;
 
 trait InteractsTelegramService
 {
@@ -31,10 +29,11 @@ trait InteractsTelegramService
     public function telegram($botName = null): MorphOne
     {
         if (is_null($botName)) {
-            $botKey = IceTelegramService::hashBotToken(config('telegram_service.bots.' . config('telegram_service.default_bot') . '.token'));
+            $infoBot = config('telegram_service.default_bot');
         } else {
-            $botKey = IceTelegramService::hashBotToken(config('telegram_service.bots.' . $botName . '.token'));
+            $infoBot = config("telegram_service.bots.{$botName}");
         }
+        $botKey = IceTelegram::setInfoBot($infoBot)->hashBotToken();
 
         return $this->morphOne(ServiceTelegram::class, 'owner')->where('bot_key', $botKey);
     }
@@ -69,7 +68,7 @@ trait InteractsTelegramService
         }
 
         $infoTelegram = $this->telegram($botName)?->first();
-        if(!is_null($infoTelegram)) {
+        if (!is_null($infoTelegram)) {
             dispatch(new IceTelegramSendMessage($infoTelegram?->chat_id, $message, $replyMarkup, $additionalFile, $botName, $ownerMessage))
                 ->onQueue($botInfo['queue_send'] ?? 'default');
         }
@@ -85,12 +84,12 @@ trait InteractsTelegramService
      * @param null $botName
      * @return Services\HighIceTelegramService
      */
-    public function deleteTelegramMessage($messageId, $chatId = null ,$botName = null): Services\HighIceTelegramService
+    public function deleteTelegramMessage($messageId, $chatId = null, $botName = null): Services\HighIceTelegramService
     {
         if (is_null($botName)) {
             $botInfo = config('telegram_service.bots.' . config('telegram_service.default_bot'));
         } else {
-            $botInfo = config('telegram_service.bots.' . $botName);
+            $botInfo = config("telegram_service.bots.{$botName}");
         }
         $chatId = is_null($chatId) ? $this->telegram($botName)?->first()?->chat_id : $chatId;
         return IceTelegram::setInfoBot($botInfo)->setChatId($chatId)->setParams([
@@ -106,11 +105,11 @@ trait InteractsTelegramService
     public function ownerTelegramMessages($botName = null): MorphMany
     {
         if (is_null($botName)) {
-            $botKey = IceTelegramService::hashBotToken(config('telegram_service.bots.' . config('telegram_service.default_bot') . '.token'));
+            $infoBot = config('telegram_service.default_bot');
         } else {
-            $botKey = IceTelegramService::hashBotToken(config('telegram_service.bots.' . $botName . '.token'));
+            $infoBot = config("telegram_service.bots.{$botName}");
         }
-
+        $botKey = IceTelegram::setInfoBot($infoBot)->hashBotToken();
         return $this->morphMany(ServiceTelegramOwnerMessage::class, 'owner')->where('bot_key', $botKey);
     }
 }

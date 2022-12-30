@@ -24,7 +24,7 @@ class IceTelegramService
         $this->infoBot = $infoBot;
     }
 
-    public function handle(array $data)
+    public function handle(array $data):void
     {
         if (isset($data['message'])) {
             $this->typeInfo = 'message';
@@ -66,8 +66,7 @@ class IceTelegramService
 
             $this->owner = ServiceTelegram::query()->where('chat_id', $this->from['id'])->first()?->owner ?? null;
 
-            self::saveMessage($this->data, $this->infoBot, $this->owner);
-
+            IceTelegram::setInfoBot($this->infoBot)->setOwner($this->owner)->saveAnswer($data);
             app()->setLocale($data['message']['from']['language_code'] ?? 'ru');
         }
     }
@@ -83,7 +82,7 @@ class IceTelegramService
         IceTelegram::setInfoBot($this->infoBot)->setParams($params)->deleteMessage();
     }
 
-    public function sendCallback(array $params)
+    public function sendCallback(array $params): void
     {
         IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendCallback();
     }
@@ -94,7 +93,7 @@ class IceTelegramService
         IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendQR();
     }
 
-    public function sendLocation(array $params)
+    public function sendLocation(array $params): void
     {
         $paramsSend = $params;
         $paramsSend['chat_id'] = $params['chat_id'] ?? $this->from['id'] ?? null;
@@ -125,75 +124,12 @@ class IceTelegramService
             $urlFile = "https://api.telegram.org/file/bot" . $this->infoBot['token'] . "/{$infoFile['result']['file_path']}";
             $ext = explode(".", $urlFile);
             $lastInfo = end($ext);
-            $nameTemp = time()."_".rand(100000, 999999);
+            $nameTemp = time() . "_" . rand(100000, 999999);
             $name_our_new_file = "t_" . $nameTemp . "." . $lastInfo;
             $fullPath = "{$this->infoBot['path_save_files']}" . $name_our_new_file;
             copy($urlFile, $fullPath);
             return $this->infoBot['path_save_files'] . $name_our_new_file;
         }
         return false;
-    }
-
-    /**
-     * @param $botToken
-     * @return string
-     */
-    public static function hashBotToken($botToken): string
-    {
-        return md5($botToken);
-    }
-
-    public static function saveAnswer($answerInfo, $infoBot, $owner = null)
-    {
-        try {
-            if (isset($infoBot['is_save_answer']) && $infoBot['is_save_answer'] && isset($answerInfo['result']['message_id']) && !is_null($answerInfo['result']['message_id']) && !is_null($answerInfo) && $answerInfo['ok']) {
-
-                if (!is_null($owner)) {
-                    $owner->ownerTelegramMessages()->create([
-                        'message_id' => $answerInfo['result']['message_id'],
-                        'bot_key' => IceTelegramService::hashBotToken($infoBot['token']) ?? null,
-                        'chat_id' => $answerInfo['result']['chat']['id'],
-                        'other_info' => $answerInfo['result'],
-                    ]);
-                } else {
-                    ServiceTelegramOwnerMessage::query()->create([
-                        'message_id' => $answerInfo['result']['message_id'],
-                        'bot_key' => IceTelegramService::hashBotToken($infoBot['token']) ?? null,
-                        'chat_id' => $answerInfo['result']['chat']['id'],
-                        'other_info' => $answerInfo['result'],
-                    ]);
-                }
-            }
-
-        } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
-        }
-    }
-
-    public static function saveMessage($data, $infoBot, $owner = null)
-    {
-        try {
-            if (isset($infoBot['is_save_answer']) && $infoBot['is_save_answer'] && isset($data['message_id']) && !is_null($data['message_id'])) {
-
-                if (!is_null($owner) && isset($data['message_id'])) {
-                    $owner->ownerTelegramMessages()->create([
-                        'message_id' => $data['message_id'],
-                        'bot_key' => IceTelegramService::hashBotToken($infoBot['token']) ?? null,
-                        'chat_id' => $data['chat']['id'],
-                        'other_info' => $data,
-                    ]);
-                } else {
-                    ServiceTelegramOwnerMessage::query()->create([
-                        'message_id' => $data['message_id'],
-                        'bot_key' => IceTelegramService::hashBotToken($infoBot['token']) ?? null,
-                        'chat_id' => $data['chat']['id'],
-                        'other_info' => $data,
-                    ]);
-                }
-            }
-
-        } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
-        }
     }
 }

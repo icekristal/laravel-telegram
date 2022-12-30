@@ -222,7 +222,7 @@ class HighIceTelegramService
      * @param $answer
      * @return void
      */
-    private function saveAnswer($answer): void
+    public function saveAnswer($answer): void
     {
         try {
             if (!(isset($this->infoBot['is_save_answer']) && $this->infoBot['is_save_answer'] && isset($answer['result']['message_id']) && !is_null($answer) && $answer['ok'])) {
@@ -232,14 +232,14 @@ class HighIceTelegramService
             if (!is_null($this->owner)) {
                 $this->owner->ownerTelegramMessages()->create([
                     'message_id' => $answer['result']['message_id'],
-                    'bot_key' => IceTelegramService::hashBotToken($answer['token']) ?? null,
+                    'bot_key' => $this->hashBotToken() ?? null,
                     'chat_id' => $answer['result']['chat']['id'],
                     'other_info' => $answer['result'],
                 ]);
             } else {
                 ServiceTelegramOwnerMessage::query()->create([
                     'message_id' => $answer['result']['message_id'],
-                    'bot_key' => IceTelegramService::hashBotToken($answer['token']) ?? null,
+                    'bot_key' => $this->hashBotToken() ?? null,
                     'chat_id' => $answer['result']['chat']['id'],
                     'other_info' => $answer['result'],
                 ]);
@@ -265,5 +265,17 @@ class HighIceTelegramService
     {
         $this->owner = $owner;
         return $this;
+    }
+
+
+
+    /**
+     * Получаем хеш токена
+     *
+     * @return string
+     */
+    public function hashBotToken(): string
+    {
+        return md5($this->infoBot['token']);
     }
 }

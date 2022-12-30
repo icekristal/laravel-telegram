@@ -2,6 +2,7 @@
 
 namespace Icekristal\LaravelTelegram\Jobs;
 
+use Icekristal\LaravelTelegram\Facades\IceTelegram;
 use Icekristal\LaravelTelegram\Models\ServiceTelegram;
 use Icekristal\LaravelTelegram\Services\IceTelegramService;
 use Illuminate\Bus\Queueable;
@@ -34,7 +35,7 @@ class IceTelegramJob implements ShouldQueue
      *
      * @return void
      */
-    public function handle()
+    public function handle():void
     {
         $telegram = new IceTelegramService($this->infoBot);
         $telegram->handle($this->request);
@@ -42,7 +43,7 @@ class IceTelegramJob implements ShouldQueue
         if ($this->infoBot['is_save_database'] && isset($telegram->from['id'])) {
             ServiceTelegram::query()->updateOrCreate([
                 'chat_id' => $telegram->from['id'],
-                'bot_key' => IceTelegramService::hashBotToken($this->infoBot['token']),
+                'bot_key' => IceTelegram::setInfoBot($this->infoBot)->hashBotToken(),
             ], [
                 'username' => $telegram->from['username'] ?? null,
                 'alias' => $telegram->from['alias'] ?? null,

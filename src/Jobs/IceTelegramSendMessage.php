@@ -3,14 +3,11 @@
 namespace Icekristal\LaravelTelegram\Jobs;
 
 use Icekristal\LaravelTelegram\Facades\IceTelegram;
-use Icekristal\LaravelTelegram\Models\ServiceTelegramOwnerMessage;
-use Icekristal\LaravelTelegram\Services\IceTelegramService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
 
 class IceTelegramSendMessage implements ShouldQueue
 {
@@ -55,10 +52,11 @@ class IceTelegramSendMessage implements ShouldQueue
         if (isset($this->additionalFile['type'])) {
             $paramsForSend['chat_id'] = $this->params['chat_id'];
 
-            if(isset($this->additionalFile['url'])) {
+            if (isset($this->additionalFile['url'])) {
                 if ($this->additionalFile['type'] == 'photo' && $this->additionalFile['url'] != '') {
                     $paramsForSend['photo'] = $this->additionalFile['url'];
                     IceTelegram::setInfoBot($this->botInfo)->setParams($paramsForSend)->setOwner($this->ownerAnswer)->sendPhoto();
+
                 }
                 if ($this->additionalFile['type'] == 'document' && $this->additionalFile['url'] != '') {
                     $paramsForSend['document'] = $this->additionalFile['url'];
@@ -66,7 +64,7 @@ class IceTelegramSendMessage implements ShouldQueue
                 }
             }
 
-            if($this->additionalFile['type'] == 'location' && isset($this->additionalFile['latitude']) && isset($this->additionalFile['longitude'])) {
+            if ($this->additionalFile['type'] == 'location' && isset($this->additionalFile['latitude']) && isset($this->additionalFile['longitude'])) {
                 IceTelegram::setInfoBot($this->botInfo)->setParams($paramsForSend)->setOwner($this->ownerAnswer)->sendLocation();
             }
         }

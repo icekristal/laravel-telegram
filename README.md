@@ -126,7 +126,7 @@ Notification
     }
 ```
 
-Facede Telegram:
+Facade Telegram:
 ```php
 IceTelegram::setInfoBot(array $infoBot);
 IceTelegram::setChatId(mixed $chatId);
