@@ -29,7 +29,8 @@ trait InteractsTelegramService
     public function telegram($botName = null): MorphOne
     {
         if (is_null($botName)) {
-            $infoBot = config('telegram_service.default_bot');
+            $botName = config('telegram_service.default_bot');
+            $infoBot = config("telegram_service.bots.{$botName}");
         } else {
             $infoBot = config("telegram_service.bots.{$botName}");
         }
