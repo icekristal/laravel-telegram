@@ -11,6 +11,7 @@ class TelegramChannel
     {
         $message = $notification->toTelegram($notifiable);
         $to = $notifiable->routeNotificationFor('Telegram');
+        if(is_null($to)) return;
 
         return IceTelegram::setChatId($to)->setParams([
             'text' => $message->content

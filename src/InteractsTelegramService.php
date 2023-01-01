@@ -14,11 +14,11 @@ trait InteractsTelegramService
 {
     /**
      * Для нотификаций по чат ID телеги
-     * @return string
+     * @return mixed
      */
-    public function routeNotificationForTelegram(): string
+    public function routeNotificationForTelegram():mixed
     {
-        return $this->telegram->chat_id;
+        return $this?->telegram?->chat_id;
     }
 
     /**
