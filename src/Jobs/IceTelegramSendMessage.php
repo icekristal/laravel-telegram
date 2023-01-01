@@ -22,23 +22,26 @@ class IceTelegramSendMessage implements ShouldQueue
      *
      * @return void
      */
-    public function __construct($chatId, $message, $replyMarkup = '', $additionalFile = [], $botName = null, $ownerAnswer = null)
+    public function __construct($chatId, $message, $replyMarkup = '', $additionalSendInfo = [], $botName = null, $ownerAnswer = null)
     {
         if (is_null($botName)) {
             $this->botInfo = config('telegram_service.bots.' . config('telegram_service.default_bot'));
         } else {
             $this->botInfo = config('telegram_service.bots.' . $botName);
         }
-        $this->additionalFile = $additionalFile;
+        $this->additionalFile = $additionalSendInfo;
         $this->ownerAnswer = !is_null($ownerAnswer) ? get_class($ownerAnswer)::query()->find($ownerAnswer->id) : null;
         $this->params = [
             'chat_id' => $chatId,
             'text' => $message,
             'reply_markup' => $replyMarkup != '' ? json_encode($replyMarkup) : ''
         ];
+        if (isset($additionalSendInfo['parse_mode'])) {
+            $this->params['parse_mode'] = $additionalSendInfo['parse_mode'];
+        }
 
-        if (isset($additionalFile['reply_to_message_id']) && !is_null($additionalFile['reply_to_message_id'])) {
-            $this->params['reply_to_message_id'] = $additionalFile['reply_to_message_id'];
+        if (isset($additionalSendInfo['reply_to_message_id']) && !is_null($additionalSendInfo['reply_to_message_id'])) {
+            $this->params['reply_to_message_id'] = $additionalSendInfo['reply_to_message_id'];
         }
     }
 
