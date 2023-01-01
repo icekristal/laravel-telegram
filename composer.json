@@ -25,7 +25,7 @@
                 "Icekristal\\LaravelTelegram\\TelegramServiceProvider"
             ],
             "aliases": {
-                "IceTelegram": "Icekristal\\LaravelChainGatewayApi\\Facades\\IceTelegram"
+                "IceTelegram": "Icekristal\\LaravelTelegram\\Facades\\IceTelegram"
             }
         }
     }
