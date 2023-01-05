@@ -5,6 +5,7 @@ return [
             'name_bot' => 'first_bot',
             'is_save_database' => env('TELEGRAM_BOT_IS_SAVE_DATABASE', false),
             'is_technical_job' => env('TELEGRAM_BOT_IS_TECHNICAL_JOB', false),
+            'db_connection' => env('DB_CONNECTION', 'mysql'),
             'is_save_files' => false,
             'is_save_answer' => false,
             'path_save_files' => 'storage/telegram/',

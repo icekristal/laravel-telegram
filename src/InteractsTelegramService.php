@@ -36,16 +36,23 @@ trait InteractsTelegramService
         }
         $botKey = IceTelegram::setInfoBot($infoBot)->hashBotToken();
 
-        return $this->morphOne(ServiceTelegram::class, 'owner')->where('bot_key', $botKey);
+        return $this->setConnection($infoBot['db_connection'] ?? env('DB_CONNECTION'))->morphOne(ServiceTelegram::class, 'owner')->where('bot_key', $botKey);
     }
 
     /**
      *
      * @return MorphMany
      */
-    public function telegrams(): MorphMany
+    public function telegrams($botName = null): MorphMany
     {
-        return $this->morphMany(ServiceTelegram::class, 'owner');
+        if (is_null($botName)) {
+            $botName = config('telegram_service.default_bot');
+            $infoBot = config("telegram_service.bots.{$botName}");
+        } else {
+            $infoBot = config("telegram_service.bots.{$botName}");
+        }
+
+        return $this->setConnection($infoBot['db_connection'] ?? env('DB_CONNECTION'))->morphMany(ServiceTelegram::class, 'owner');
     }
 
     /**
@@ -111,6 +118,6 @@ trait InteractsTelegramService
             $infoBot = config("telegram_service.bots.{$botName}");
         }
         $botKey = IceTelegram::setInfoBot($infoBot)->hashBotToken();
-        return $this->morphMany(ServiceTelegramOwnerMessage::class, 'owner')->where('bot_key', $botKey);
+        return $this->setConnection($infoBot['db_connection'] ?? env('DB_CONNECTION'))->morphMany(ServiceTelegramOwnerMessage::class, 'owner')->where('bot_key', $botKey);
     }
 }
