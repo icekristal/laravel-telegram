@@ -41,6 +41,7 @@ trait InteractsTelegramService
 
     /**
      *
+     * @param null $botName
      * @return MorphMany
      */
     public function telegrams($botName = null): MorphMany
@@ -80,8 +81,6 @@ trait InteractsTelegramService
             dispatch(new IceTelegramSendMessage($infoTelegram?->chat_id, $message, $replyMarkup, $additionalFile, $botName, $ownerMessage))
                 ->onQueue($botInfo['queue_send'] ?? 'default');
         }
-
-
     }
 
     /**
