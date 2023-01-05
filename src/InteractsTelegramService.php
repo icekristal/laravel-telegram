@@ -6,7 +6,6 @@ use Icekristal\LaravelTelegram\Facades\IceTelegram;
 use Icekristal\LaravelTelegram\Jobs\IceTelegramSendMessage;
 use Icekristal\LaravelTelegram\Models\ServiceTelegram;
 use Icekristal\LaravelTelegram\Models\ServiceTelegramOwnerMessage;
-use Icekristal\LaravelTelegram\Services\IceTelegramService;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
