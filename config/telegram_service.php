@@ -12,8 +12,8 @@ return [
             'url' => 'https://t.me/' . env('TELEGRAM_BOT_NAME', 'first_bot'),
             'name' => env('TELEGRAM_BOT_NAME', null),
             'token' => env('TELEGRAM_BOT_TOKEN', null),
-            'webhook_domain' => env('TELEGRAM_WEBHOOK_DOMAIN', null), //null - main domain
-            'webhook_url' => env('TELEGRAM_WEBHOOK_URL', null),
+            'webhook_domain' => env('TELEGRAM_WEBHOOK_DOMAIN', 'localhost'), //null - main domain
+            'webhook_url' => env('TELEGRAM_WEBHOOK_URL', 'ice_telegram_url'),
             'queue_webhook' => 'webhook_telegram', //null - no active queue
             'queue_send' => 'webhook_telegram', //null - no active queue
 
