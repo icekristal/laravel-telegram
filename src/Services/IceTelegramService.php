@@ -16,6 +16,7 @@ class IceTelegramService
     public mixed $from;
     public mixed $type;
     public mixed $owner;
+    public mixed $messageId;
     public mixed $callbackQuery = null;
 
 
@@ -24,7 +25,7 @@ class IceTelegramService
         $this->infoBot = $infoBot;
     }
 
-    public function handle(array $data):void
+    public function handle(array $data): void
     {
         if (isset($data['message'])) {
             $this->typeInfo = 'message';
@@ -35,6 +36,7 @@ class IceTelegramService
         $this->data = $data['message'] ?? $data['callback_query'] ?? null;
         $this->from = $data['message']['from'] ?? $data['callback_query']['from'] ?? null;
         $this->type = '';
+        $this->messageId = $this?->data['message']['message_id'] ?? null;
 
         if (!is_null($this->from)) {
             if (!isset($this->from['username'])) {

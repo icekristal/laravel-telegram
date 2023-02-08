@@ -75,6 +75,18 @@ class HighIceTelegramService
     }
 
     /**
+     * Update text message
+     *
+     * @return void
+     */
+    public function editMessageText(): void
+    {
+        if (!$this->isValidated(['text', 'message_id'])) return;
+        $this->partUrl = '/editMessageText';
+        $this->sendRequest();
+    }
+
+    /**
      * Send delete message
      *
      * @return void

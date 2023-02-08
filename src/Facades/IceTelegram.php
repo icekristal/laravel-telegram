@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static HighIceTelegramService setChatId(mixed $chatId)
  * @method static HighIceTelegramService setParams(array $params)
  * @method static HighIceTelegramService setOwner(mixed $owner)
+ * @method static HighIceTelegramService editMessageText()
  * @method static HighIceTelegramService sendMessage()
  * @method static HighIceTelegramService deleteMessage()
  * @method static HighIceTelegramService sendCallback()

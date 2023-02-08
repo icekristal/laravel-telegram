@@ -6,6 +6,7 @@ use Icekristal\LaravelTelegram\Facades\IceTelegram;
 use Icekristal\LaravelTelegram\Jobs\IceTelegramSendMessage;
 use Icekristal\LaravelTelegram\Models\ServiceTelegram;
 use Icekristal\LaravelTelegram\Models\ServiceTelegramOwnerMessage;
+use Icekristal\LaravelTelegram\Services\HighIceTelegramService;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
@@ -88,9 +89,9 @@ trait InteractsTelegramService
      * @param $messageId
      * @param null $chatId
      * @param null $botName
-     * @return Services\HighIceTelegramService
+     * @return void
      */
-    public function deleteTelegramMessage($messageId, $chatId = null, $botName = null): Services\HighIceTelegramService
+    public function deleteTelegramMessage($messageId, $chatId = null, $botName = null): void
     {
         if (is_null($botName)) {
             $botInfo = config('telegram_service.bots.' . config('telegram_service.default_bot'));
@@ -98,9 +99,32 @@ trait InteractsTelegramService
             $botInfo = config("telegram_service.bots.{$botName}");
         }
         $chatId = is_null($chatId) ? $this->telegram($botName)?->first()?->chat_id : $chatId;
-        return IceTelegram::setInfoBot($botInfo)->setChatId($chatId)->setParams([
+        IceTelegram::setInfoBot($botInfo)->setChatId($chatId)->setParams([
             'message_id' => intval($messageId),
-        ]);
+        ])->deleteMessage();
+    }
+
+    /**
+     * Редактируем сообщение
+     *
+     * @param $messageId
+     * @param $newText
+     * @param null $chatId
+     * @param null $botName
+     * @return void
+     */
+    public function editTelegramTextMessage($messageId, $newText, $chatId = null, $botName = null): void
+    {
+        if (is_null($botName)) {
+            $botInfo = config('telegram_service.bots.' . config('telegram_service.default_bot'));
+        } else {
+            $botInfo = config("telegram_service.bots.{$botName}");
+        }
+        $chatId = is_null($chatId) ? $this->telegram($botName)?->first()?->chat_id : $chatId;
+        IceTelegram::setInfoBot($botInfo)->setChatId($chatId)->setParams([
+            'message_id' => intval($messageId),
+            'text' => $newText
+        ])->editMessageText();
     }
 
     /**
