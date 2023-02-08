@@ -15,7 +15,7 @@ trait InteractsTelegramService
      * Для нотификаций по чат ID телеги
      * @return mixed
      */
-    public function routeNotificationForTelegram():mixed
+    public function routeNotificationForTelegram(): mixed
     {
         return $this?->telegram?->chat_id;
     }
@@ -111,7 +111,7 @@ trait InteractsTelegramService
     public function ownerTelegramMessages($botName = null): MorphMany
     {
         if (is_null($botName)) {
-            $infoBot = config('telegram_service.default_bot');
+            $infoBot = config("telegram_service.bots." . config('telegram_service.default_bot'));
         } else {
             $infoBot = config("telegram_service.bots.{$botName}");
         }
