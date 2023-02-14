@@ -9,7 +9,7 @@
             "email": "savatneev-anton@mail.ru"
         }
     ],
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "require": {
         "php": "^8.1",
         "laravel/framework": "^8|^9|^10"
