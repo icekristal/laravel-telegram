@@ -77,10 +77,14 @@ class IceTelegramJob implements ShouldQueue
 
 
         if (isset($infoAnswerUser['only_message'])) {
-            $telegram->sendMessage([
+            $data = [
                 'chat_id' => $telegram->from['id'],
                 'text' => $infoAnswerUser['only_message'],
-            ]);
+            ];
+            if ($telegram->isEntitiesBot) {
+                $data['reply_to_message_id'] = $telegram->messageId;
+            }
+            $telegram->sendMessage($data);
         }
 
         if (isset($infoAnswerUser['message'])) {
@@ -88,6 +92,11 @@ class IceTelegramJob implements ShouldQueue
                 'chat_id' => $telegram->from['id'],
                 'text' => $infoAnswerUser['message'],
             ];
+
+            if ($telegram->isEntitiesBot) {
+                $data['reply_to_message_id'] = $telegram->messageId;
+            }
+
             isset($infoAnswerUser['keyboard']) ? $data['reply_markup'] = json_encode($infoAnswerUser['keyboard']) : '';
             $telegram->sendMessage($data);
         }
