@@ -45,7 +45,7 @@ class IceTelegramService
                 $this->isGroupChat = true;
                 $this->from['id'] = $this->data['chat']['id'];
                 $fullNameBot = "@" . $this->infoBot['name'] ?? null;
-                if(isset($this->data['entities']) && str_contains($this?->data['message']['text'], $fullNameBot)) {
+                if (isset($this->data['entities']) && str_contains($this?->data['text'], $fullNameBot)) {
                     $this->isEntitiesBot = true;
                 }
             }
