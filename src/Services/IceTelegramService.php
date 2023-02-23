@@ -38,7 +38,7 @@ class IceTelegramService
         $this->data = $data['message'] ?? $data['callback_query'] ?? null;
         $this->from = $data['message']['from'] ?? $data['callback_query']['from'] ?? null;
         $this->type = '';
-        $this->messageId = $this?->data['message']['message_id'] ?? null;
+        $this->messageId = $this?->data['message_id'] ?? null;
 
         if (!is_null($this->from)) {
             if (isset($this->data['chat']) && $this->data['chat']['type'] == 'group') {
