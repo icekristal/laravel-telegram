@@ -8,6 +8,7 @@ return [
             'db_connection' => env('DB_CONNECTION', 'mysql'),
             'is_save_files' => false,
             'is_save_answer' => false,
+            'is_send_answer_group_only_entities_bot' => true, //send message only entities bot "@name_bot text text"
             'path_save_files' => 'storage/telegram/',
             'url' => 'https://t.me/' . env('TELEGRAM_BOT_NAME', 'first_bot'),
             'name' => env('TELEGRAM_BOT_NAME', null),

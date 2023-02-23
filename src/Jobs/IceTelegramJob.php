@@ -35,7 +35,7 @@ class IceTelegramJob implements ShouldQueue
      *
      * @return void
      */
-    public function handle():void
+    public function handle(): void
     {
         $telegram = new IceTelegramService($this->infoBot);
         $telegram->handle($this->request);
@@ -48,6 +48,14 @@ class IceTelegramJob implements ShouldQueue
                 'username' => $telegram->from['username'] ?? null,
                 'alias' => $telegram->from['alias'] ?? null,
             ]);
+        }
+
+        $checkConfig = $this->infoBot['is_send_answer_group_only_entities_bot'] ?? true;
+
+        if ($telegram->isGroupChat) {
+            if ($checkConfig && !$telegram->isEntitiesBot) {
+                return;
+            }
         }
 
         $infoAnswerUser = [];

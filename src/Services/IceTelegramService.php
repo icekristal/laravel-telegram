@@ -13,6 +13,8 @@ class IceTelegramService
     public mixed $typeInfo = null;
     public mixed $data;
     public array $infoBot;
+    public bool $isGroupChat = false;
+    public bool $isEntitiesBot = false;
     public mixed $from;
     public mixed $type;
     public mixed $owner;
@@ -39,6 +41,15 @@ class IceTelegramService
         $this->messageId = $this?->data['message']['message_id'] ?? null;
 
         if (!is_null($this->from)) {
+            if (isset($this->data['chat']) && $this->data['chat']['type'] == 'group') {
+                $this->isGroupChat = true;
+                $this->from['id'] = $this->data['chat']['id'];
+                $fullNameBot = "@" . $this->infoBot['name'] ?? null;
+                if(isset($this->data['entities']) && str_contains($this?->data['message']['text'], $fullNameBot)) {
+                    $this->isEntitiesBot = true;
+                }
+            }
+
             if (!isset($this->from['username'])) {
                 $num = rand(1000, 999999999);
                 $this->from['username'] = "#{$num}";
