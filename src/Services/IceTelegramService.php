@@ -41,7 +41,7 @@ class IceTelegramService
         $this->messageId = $this?->data['message_id'] ?? null;
 
         if (!is_null($this->from)) {
-            if (isset($this->data['chat']) && $this->data['chat']['type'] == 'group') {
+            if (isset($this->data['chat']) && ( in_array($this->data['chat']['type'], ['group', 'supergroup']))) {
                 $this->isGroupChat = true;
                 $this->from['id'] = $this->data['chat']['id'];
                 $fullNameBot = "@" . $this->infoBot['name'] ?? null;
