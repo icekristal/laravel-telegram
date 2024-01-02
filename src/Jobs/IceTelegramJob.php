@@ -52,7 +52,7 @@ class IceTelegramJob implements ShouldQueue
 
         $checkConfig = $this->infoBot['is_send_answer_group_only_entities_bot'] ?? true;
 
-        if ($telegram->isGroupChat) {
+        if ($telegram->isGroupChat && $telegram->typeInfo != 'message_reaction') {
             if ($checkConfig && !$telegram->isEntitiesBot) {
                 return;
             }
