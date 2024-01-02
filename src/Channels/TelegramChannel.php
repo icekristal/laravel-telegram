@@ -18,6 +18,6 @@ class TelegramChannel
             'text' => $message->content
         ])->sendMessage();
         $message->sendedMessageId($sendInfo->getSendedMessageId());
-        return $sendInfo;
+        return $message;
     }
 }
