@@ -4,6 +4,7 @@ namespace Icekristal\LaravelTelegram\Services;
 
 use Icekristal\LaravelTelegram\Models\ServiceTelegramOwnerMessage;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class HighIceTelegramService
 {
@@ -15,6 +16,8 @@ class HighIceTelegramService
     public array $params = [];
 
     private mixed $owner = null;
+
+    private ?int $sendedMessageId = null;
 
 
     /**
@@ -236,6 +239,10 @@ class HighIceTelegramService
      */
     public function saveAnswer($answer): void
     {
+        if (!is_null($answer) && $answer['ok'] && isset($answer['result']['message_id'])) {
+            $this->sendedMessageId = intval($answer['result']['message_id']) ?? null;
+        }
+
         try {
             if (!(isset($this->infoBot['is_save_answer']) && $this->infoBot['is_save_answer'] && isset($answer['result']['message_id']) && !is_null($answer) && $answer['ok'])) {
                 return;
@@ -280,7 +287,6 @@ class HighIceTelegramService
     }
 
 
-
     /**
      * Получаем хеш токена
      *
@@ -289,5 +295,14 @@ class HighIceTelegramService
     public function hashBotToken(): string
     {
         return md5($this->infoBot['token']);
+    }
+
+    /**
+     * Получаем ID отправленного сообщения
+     * @return int|null
+     */
+    public function getSendedMessageId(): ?int
+    {
+        return $this->sendedMessageId;
     }
 }

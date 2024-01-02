@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static HighIceTelegramService sendDocument()
  * @method static HighIceTelegramService sendLocation()
  * @method static HighIceTelegramService sendQR()
+ * @method static HighIceTelegramService getSendedMessageId()
  * @method static HighIceTelegramService hashBotToken()
  */
 class IceTelegram extends Facade
