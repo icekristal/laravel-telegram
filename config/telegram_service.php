@@ -28,6 +28,7 @@ return [
                 'location' => App\Services\DefaultBotTelegramHandle\LocationHandle::class,
             ],
             'method_callback_query' => App\Services\DefaultBotTelegramHandle\CallbackQueryHandle::class,
+            'method_message_reaction' => App\Services\DefaultBotTelegramHandle\MessageReactionHandle::class,
         ],
     ],
 

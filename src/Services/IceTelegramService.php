@@ -20,6 +20,7 @@ class IceTelegramService
     public mixed $owner;
     public mixed $messageId;
     public mixed $callbackQuery = null;
+    public mixed $messageReaction = null;
 
 
     public function __construct(array $infoBot)
@@ -31,12 +32,14 @@ class IceTelegramService
     {
         if (isset($data['message'])) {
             $this->typeInfo = 'message';
-        } else if (isset($data['callback_query'])) {
+        } elseif (isset($data['callback_query'])) {
             $this->typeInfo = 'callback_query';
+        } elseif (isset($data['message_reaction'])) {
+            $this->typeInfo = 'message_reaction';
         }
 
-        $this->data = $data['message'] ?? $data['callback_query'] ?? null;
-        $this->from = $data['message']['from'] ?? $data['callback_query']['from'] ?? null;
+        $this->data = $data['message'] ?? $data['callback_query'] ?? $data['message_reaction'] ?? null;
+        $this->from = $data['message']['from'] ?? $data['callback_query']['from'] ?? $data['message_reaction']['user'] ?? null;
         $this->type = '';
         $this->messageId = $this?->data['message_id'] ?? null;
 
@@ -75,6 +78,9 @@ class IceTelegramService
             } elseif ($this->typeInfo == 'callback_query') {
                 $this->type = 'callback_query';
                 $this->callbackQuery = $this->data;
+            } elseif ($this->typeInfo == 'message_reaction') {
+                $this->type = 'message_reaction';
+                $this->messageReaction = $this->data;
             }
 
             $this->owner = ServiceTelegram::query()->where('chat_id', $this->from['id'])->first()?->owner ?? null;

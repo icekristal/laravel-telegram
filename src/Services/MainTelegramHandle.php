@@ -10,6 +10,7 @@ class MainTelegramHandle
     protected IceTelegramService|null $telegramService = null;
     protected array|null $botInfo = null;
     public $onlyMessage = null;
+    public $onlyReaction = null;
     public $messageCallback = null;
     public $message = null;
     public $keyboard = null;
@@ -26,10 +27,11 @@ class MainTelegramHandle
         $this->botInfo = $botInfo;
     }
 
-    #[ArrayShape(['only_message' => "null", 'callback_message' => "null", 'message' => "null", 'keyboard' => "null", 'image' => "null", 'file' => "null", 'show_alert' => "bool", 'cache_time' => "int", 'url' => "null"])] public function getResult(): array
+    public function getResult(): array
     {
         return [
             'only_message' => $this->onlyMessage,
+            'only_reaction' => $this->onlyReaction,
             'callback_message' => $this->messageCallback,
             'message' => $this->message,
             'keyboard' => $this->keyboard,

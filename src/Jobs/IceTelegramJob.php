@@ -71,6 +71,7 @@ class IceTelegramJob implements ShouldQueue
                 'text' => !is_null($this->infoBot['method_messages']['text']) ? (new $this->infoBot['method_messages']['text']($telegram, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
                 'location' => !is_null($this->infoBot['method_messages']['location']) ? (new $this->infoBot['method_messages']['location']($telegram, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
                 'callback_query' => !is_null($this->infoBot['method_callback_query']) ? (new $this->infoBot['method_callback_query']($telegram, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->callbackQuery),
+                'message_reaction' => !is_null($this->infoBot['method_message_reaction']) ? (new $this->infoBot['method_message_reaction']($telegram, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->messageReaction),
                 default => []
             };
         }
