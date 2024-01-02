@@ -6,6 +6,8 @@ class TelegramMessage
 {
     public $content;
 
+    public $sendedMessageId = null;
+
     public function content($content): static
     {
         $this->content = $content;
