@@ -17,7 +17,7 @@ class TelegramChannel
         $sendInfo->setParams([
             'text' => $message->content
         ])->sendMessage();
-        $message->sendedMessageId = $sendInfo->getSendedMessageId() ?? null;
+        $message->sendedMessageId($sendInfo->getSendedMessageId());
         return $sendInfo;
     }
 }

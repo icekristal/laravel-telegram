@@ -13,4 +13,10 @@ class TelegramMessage
         $this->content = $content;
         return $this;
     }
+
+    public function sendedMessageId($sendedMessageId): static
+    {
+        $this->sendedMessageId = $sendedMessageId;
+        return $this;
+    }
 }
