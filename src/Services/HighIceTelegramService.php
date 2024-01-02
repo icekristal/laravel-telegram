@@ -239,12 +239,12 @@ class HighIceTelegramService
      */
     public function saveAnswer($answer): void
     {
-        if (!is_null($answer) && $answer['ok'] && isset($answer['result']['message_id'])) {
+        if (!is_null($answer) && isset($answer['result']['message_id'])) {
             $this->sendedMessageId = intval($answer['result']['message_id']) ?? null;
         }
 
         try {
-            if (!(isset($this->infoBot['is_save_answer']) && $this->infoBot['is_save_answer'] && isset($answer['result']['message_id']) && !is_null($answer) && $answer['ok'])) {
+            if (!(isset($this->infoBot['is_save_answer']) && $this->infoBot['is_save_answer'] && isset($answer['result']['message_id']) && !is_null($answer) && isset($answer['ok']))) {
                 return;
             }
 
