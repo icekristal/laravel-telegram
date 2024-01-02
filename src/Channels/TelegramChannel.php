@@ -11,10 +11,12 @@ class TelegramChannel
     {
         $message = $notification->toTelegram($notifiable);
         $to = $notifiable->routeNotificationFor('Telegram');
-        if(is_null($to)) return;
+        if (is_null($to)) return null;
 
-        return IceTelegram::setChatId($to)->setParams([
+        $sendInfo = IceTelegram::setChatId($to);
+        $sendInfo->setParams([
             'text' => $message->content
         ])->sendMessage();
+        return $sendInfo->getSendedMessageId();
     }
 }
