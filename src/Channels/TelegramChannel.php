@@ -14,6 +14,7 @@ class TelegramChannel
         if (is_null($to)) return null;
 
         $sendInfo = IceTelegram::setChatId($to);
+        $sendInfo->setSaveModelSentedMessage($message->saveModelSentedMessage, $message->fieldSaveModelSentedMessage);
         $sendInfo->setParams([
             'text' => $message->content
         ])->sendMessage();

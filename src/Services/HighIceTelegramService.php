@@ -19,6 +19,9 @@ class HighIceTelegramService
 
     private ?int $sendedMessageId = null;
 
+    private $saveModelSentedMessage = null;
+    private $fieldSaveModelSentedMessage = 'message_id';
+
 
     /**
      * get info telegram bot
@@ -241,6 +244,14 @@ class HighIceTelegramService
     {
         if (!is_null($answer) && isset($answer['result']['message_id'])) {
             $this->sendedMessageId = intval($answer['result']['message_id']) ?? null;
+            if(!is_null($this->saveModelSentedMessage)) {
+                try{
+                    $this->saveModelSentedMessage->{$this->fieldSaveModelSentedMessage} = $this->sendedMessageId;
+                    $this->saveModelSentedMessage->save();
+                }catch (\Exception $exception) {
+                    Log::error($exception->getMessage());
+                }
+            }
         }
 
         try {
@@ -304,5 +315,17 @@ class HighIceTelegramService
     public function getSendedMessageId(): ?int
     {
         return $this->sendedMessageId;
+    }
+
+    /**
+     * @param null $saveModelSentedMessage
+     * @param string $fieldSaveModelSentedMessage
+     * @return HighIceTelegramService
+     */
+    public function setSaveModelSentedMessage($saveModelSentedMessage, string $fieldSaveModelSentedMessage = 'message_id'): HighIceTelegramService
+    {
+        $this->fieldSaveModelSentedMessage = $fieldSaveModelSentedMessage;
+        $this->saveModelSentedMessage = $saveModelSentedMessage;
+        return $this;
     }
 }
