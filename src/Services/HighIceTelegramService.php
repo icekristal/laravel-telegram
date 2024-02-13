@@ -317,6 +317,7 @@ class HighIceTelegramService
         return $this->sendedMessageId;
     }
 
+
     /**
      * @param null $saveModelSentedMessage
      * @param string $fieldSaveModelSentedMessage
