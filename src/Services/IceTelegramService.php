@@ -44,7 +44,7 @@ class IceTelegramService
         $this->messageId = $this?->data['message_id'] ?? null;
 
         if (!is_null($this->from)) {
-            if (isset($this->data['chat']) && ( in_array($this->data['chat']['type'], ['group', 'supergroup']))) {
+            if (isset($this->data['chat']) && (in_array($this->data['chat']['type'], ['group', 'supergroup']))) {
                 $this->isGroupChat = true;
                 $this->from['id'] = $this->data['chat']['id'];
                 $fullNameBot = "@" . $this->infoBot['name'] ?? null;
@@ -150,5 +150,14 @@ class IceTelegramService
             return $this->infoBot['path_save_files'] . $name_our_new_file;
         }
         return false;
+    }
+
+    public function getUrlFile($fileId): string|null
+    {
+        $infoFile = Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/getFile?file_id=' . $fileId);
+        if($infoFile['ok'] && isset($infoFile['result']['file_path'])) {
+            return "https://api.telegram.org/file/bot" . $this->infoBot['token'] . "/{$infoFile['result']['file_path']}";
+        }
+        return null;
     }
 }
