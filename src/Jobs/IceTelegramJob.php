@@ -88,6 +88,17 @@ class IceTelegramJob implements ShouldQueue
             $telegram->sendMessage($data);
         }
 
+        if (isset($infoAnswerUser['image'])) {
+            $telegram->sendPhoto([
+                'caption' => $infoAnswerUser['caption'] ?? null,
+            ], $infoAnswerUser['image']);
+        }
+
+
+        if (isset($infoAnswerUser['file'])) {
+            $telegram->sendDocument([], $infoAnswerUser['file']);
+        }
+
         if (isset($infoAnswerUser['message'])) {
             $data = [
                 'chat_id' => $telegram->from['id'],
@@ -102,14 +113,7 @@ class IceTelegramJob implements ShouldQueue
             $telegram->sendMessage($data);
         }
 
-        if (isset($infoAnswerUser['image'])) {
-            $telegram->sendPhoto([], $infoAnswerUser['image']);
-        }
 
-
-        if (isset($infoAnswerUser['file'])) {
-            $telegram->sendDocument([], $infoAnswerUser['file']);
-        }
 
         if ($telegram->type == 'callback_query' && isset($telegram->data['id'])) {
             $paramCallback = [

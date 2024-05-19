@@ -13,6 +13,7 @@ class MainTelegramHandle
     public $onlyReaction = null;
     public $messageCallback = null;
     public $message = null;
+    public $caption = null;
     public $keyboard = null;
     public $image = null;
     public $file = null;
@@ -40,6 +41,7 @@ class MainTelegramHandle
             'show_alert' => $this->showAlert,
             'cache_time' => $this->cacheTime,
             'url' => $this->url,
+            'caption' => $this->caption,
         ];
     }
 }
