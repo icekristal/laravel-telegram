@@ -96,7 +96,9 @@ class IceTelegramJob implements ShouldQueue
 
 
         if (isset($infoAnswerUser['file'])) {
-            $telegram->sendDocument([], $infoAnswerUser['file']);
+            $telegram->sendDocument([
+                'caption' => $infoAnswerUser['caption'] ?? null,
+            ], $infoAnswerUser['file']);
         }
 
         if (isset($infoAnswerUser['message'])) {
