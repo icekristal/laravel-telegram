@@ -185,7 +185,7 @@ class HighIceTelegramService
     public function sendQR(): void
     {
         if (!$this->isValidated(['text'])) return;
-        $this->params['photo'] = 'https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl=' . $this->params['text'];
+        $this->params['photo'] = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' . $this->params['text'];
         $this->partUrl = '/sendPhoto';
         $this->sendRequest();
     }
