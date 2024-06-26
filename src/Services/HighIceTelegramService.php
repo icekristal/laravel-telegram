@@ -220,6 +220,14 @@ class HighIceTelegramService
     private function sendRequest(): void
     {
         if (!isset($this->params['chat_id'])) return;
+
+        if (app()->hasDebugModeEnabled()) {
+            Log::debug('HighIceTelegramService::sendRequest', [
+                    'url' => 'https://api.telegram.org/botXXX' . $this->partUrl,
+                    'params' => $this->params
+                ]);
+        }
+
         $this->response = Http::timeout(30)->post('https://api.telegram.org/bot' . $this->infoBot['token'] . $this->partUrl, $this->params);
         $this->saveAnswer($this->response);
     }
