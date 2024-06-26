@@ -22,6 +22,8 @@ class HighIceTelegramService
     private $saveModelSentedMessage = null;
     private $fieldSaveModelSentedMessage = 'message_id';
 
+    public $response = null;
+
 
     /**
      * get info telegram bot
@@ -218,7 +220,8 @@ class HighIceTelegramService
     private function sendRequest(): void
     {
         if (!isset($this->params['chat_id'])) return;
-        $this->saveAnswer(Http::timeout(30)->post('https://api.telegram.org/bot' . $this->infoBot['token'] . $this->partUrl, $this->params));
+        $this->response = Http::timeout(30)->post('https://api.telegram.org/bot' . $this->infoBot['token'] . $this->partUrl, $this->params);
+        $this->saveAnswer($this->response);
     }
 
 
@@ -342,6 +345,14 @@ class HighIceTelegramService
         $this->fieldSaveModelSentedMessage = $fieldSaveModelSentedMessage;
         $this->saveModelSentedMessage = $saveModelSentedMessage;
         return $this;
+    }
+
+    /**
+     * @return null
+     */
+    public function getResponse()
+    {
+        return $this->response;
     }
 
 }

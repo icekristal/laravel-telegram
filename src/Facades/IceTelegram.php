@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static int|null getSendedMessageId()
  * @method static string hashBotToken()
  * @method static string getUrlFile()
+ * @method static array|null getResponse()
  */
 class IceTelegram extends Facade
 {
