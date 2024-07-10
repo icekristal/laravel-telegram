@@ -232,7 +232,7 @@ class HighIceTelegramService
     /**
      * @return string|null
      */
-    public function getUrlFile(): string|null
+    public function getUrlFile(): string|null|array
     {
         if (!$this->isValidated(['file_id'])) return null;
         $infoFile = Http::post($this->infoBot['main_telegram_server_url'].'/bot' . $this->infoBot['token'] . '/getFile?file_id=' . $this->params['file_id']);
