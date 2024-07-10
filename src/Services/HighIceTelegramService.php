@@ -44,6 +44,10 @@ class HighIceTelegramService
     public function setInfoBot(array $infoBot): HighIceTelegramService
     {
         $this->infoBot = $infoBot;
+        if(!isset($infoBot['main_telegram_server_url'])) {
+            $this->infoBot['main_telegram_server_url'] = "https://api.telegram.org";
+        }
+
         return $this;
     }
 
@@ -220,7 +224,7 @@ class HighIceTelegramService
     private function sendRequest(): void
     {
         if (!isset($this->params['chat_id'])) return;
-        $this->response = Http::timeout(30)->post('https://api.telegram.org/bot' . $this->infoBot['token'] . $this->partUrl, $this->params);
+        $this->response = Http::timeout(30)->post($this->infoBot['main_telegram_server_url'].'/bot' . $this->infoBot['token'] . $this->partUrl, $this->params);
         $this->saveAnswer($this->response);
     }
 
@@ -231,9 +235,9 @@ class HighIceTelegramService
     public function getUrlFile(): string|null
     {
         if (!$this->isValidated(['file_id'])) return null;
-        $infoFile = Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/getFile?file_id=' . $this->params['file_id']);
+        $infoFile = Http::post($this->infoBot['main_telegram_server_url'].'/bot' . $this->infoBot['token'] . '/getFile?file_id=' . $this->params['file_id']);
         if($infoFile['ok'] && isset($infoFile['result']['file_path'])) {
-            return "https://api.telegram.org/file/bot" . $this->infoBot['token'] . "/{$infoFile['result']['file_path']}";
+            return $this->infoBot['main_telegram_server_url']."/file/bot" . $this->infoBot['token'] . "/{$infoFile['result']['file_path']}";
         }
         return null;
     }

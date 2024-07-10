@@ -26,6 +26,9 @@ class IceTelegramService
     public function __construct(array $infoBot)
     {
         $this->infoBot = $infoBot;
+        if(!isset($infoBot['main_telegram_server_url'])) {
+            $this->infoBot['main_telegram_server_url'] = "https://api.telegram.org";
+        }
     }
 
     public function handle(array $data): void
@@ -138,9 +141,9 @@ class IceTelegramService
 
     public function getPathFile($fileId): bool|string
     {
-        $infoFile = Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/getFile?file_id=' . $fileId);
+        $infoFile = Http::post($this->infoBot['main_telegram_server_url'].'/bot' . $this->infoBot['token'] . '/getFile?file_id=' . $fileId);
         if ($infoFile['ok'] && $this->infoBot['is_save_files']) {
-            $urlFile = "https://api.telegram.org/file/bot" . $this->infoBot['token'] . "/{$infoFile['result']['file_path']}";
+            $urlFile = $this->infoBot['main_telegram_server_url']."/file/bot" . $this->infoBot['token'] . "/{$infoFile['result']['file_path']}";
             $ext = explode(".", $urlFile);
             $lastInfo = end($ext);
             $nameTemp = time() . "_" . rand(100000, 999999);
@@ -154,9 +157,9 @@ class IceTelegramService
 
     public function getUrlFile($fileId): string|null
     {
-        $infoFile = Http::post('https://api.telegram.org/bot' . $this->infoBot['token'] . '/getFile?file_id=' . $fileId);
+        $infoFile = Http::post($this->infoBot['main_telegram_server_url'].'/bot' . $this->infoBot['token'] . '/getFile?file_id=' . $fileId);
         if($infoFile['ok'] && isset($infoFile['result']['file_path'])) {
-            return "https://api.telegram.org/file/bot" . $this->infoBot['token'] . "/{$infoFile['result']['file_path']}";
+            return $this->infoBot['main_telegram_server_url']."/file/bot" . $this->infoBot['token'] . "/{$infoFile['result']['file_path']}";
         }
         return null;
     }

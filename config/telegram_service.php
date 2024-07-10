@@ -17,6 +17,7 @@ return [
             'webhook_url' => env('TELEGRAM_WEBHOOK_URL', 'ice_telegram_url'),
             'queue_webhook' => 'webhook_telegram', //null - no active queue
             'queue_send' => 'webhook_telegram', //null - no active queue
+            'main_telegram_server_url' => env('TELEGRAM_SERVER_URL', 'https://api.telegram.org'),
 
             'method_messages' => [
                 'text' => App\Services\DefaultBotTelegramHandle\TextTelegramHandle::class,
