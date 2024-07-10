@@ -230,7 +230,7 @@ class HighIceTelegramService
 
 
     /**
-     * @return string|null
+     * @return string|null|array
      */
     public function getUrlFile(): string|null|array
     {
