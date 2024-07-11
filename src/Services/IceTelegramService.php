@@ -7,6 +7,7 @@ use Icekristal\LaravelTelegram\Models\ServiceTelegram;
 use Icekristal\LaravelTelegram\Models\ServiceTelegramOwnerMessage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class IceTelegramService
 {
@@ -26,7 +27,7 @@ class IceTelegramService
     public function __construct(array $infoBot)
     {
         $this->infoBot = $infoBot;
-        if(!isset($infoBot['main_telegram_server_url'])) {
+        if (!isset($infoBot['main_telegram_server_url'])) {
             $this->infoBot['main_telegram_server_url'] = "https://api.telegram.org";
         }
     }
@@ -141,9 +142,13 @@ class IceTelegramService
 
     public function getPathFile($fileId): bool|string
     {
-        $infoFile = Http::post($this->infoBot['main_telegram_server_url'].'/bot' . $this->infoBot['token'] . '/getFile?file_id=' . $fileId);
+        $infoFile = Http::post($this->infoBot['main_telegram_server_url'] . '/bot' . $this->infoBot['token'] . '/getFile?file_id=' . $fileId);
         if ($infoFile['ok'] && $this->infoBot['is_save_files']) {
-            $urlFile = $this->infoBot['main_telegram_server_url']."/file/bot" . $this->infoBot['token'] . "/{$infoFile['result']['file_path']}";
+            $resultPath = $infoFile['result']['file_path'];
+            if (!Str::startsWith($resultPath, '/')) {
+                $resultPath = "/" . $resultPath;
+            }
+            $urlFile = $this->infoBot['main_telegram_server_url'] . "/file/bot" . $this->infoBot['token'] . "{$resultPath}";
             $ext = explode(".", $urlFile);
             $lastInfo = end($ext);
             $nameTemp = time() . "_" . rand(100000, 999999);
@@ -157,9 +162,9 @@ class IceTelegramService
 
     public function getUrlFile($fileId): string|null
     {
-        $infoFile = Http::post($this->infoBot['main_telegram_server_url'].'/bot' . $this->infoBot['token'] . '/getFile?file_id=' . $fileId);
-        if($infoFile['ok'] && isset($infoFile['result']['file_path'])) {
-            return $this->infoBot['main_telegram_server_url']."/file/bot" . $this->infoBot['token'] . "/{$infoFile['result']['file_path']}";
+        $infoFile = Http::post($this->infoBot['main_telegram_server_url'] . '/bot' . $this->infoBot['token'] . '/getFile?file_id=' . $fileId);
+        if ($infoFile['ok'] && isset($infoFile['result']['file_path'])) {
+            return $this->infoBot['main_telegram_server_url'] . "/file/bot" . $this->infoBot['token'] . "/{$infoFile['result']['file_path']}";
         }
         return null;
     }
