@@ -3,6 +3,7 @@ return [
     'bots' => [
         'first_bot' => [
             'name_bot' => 'first_bot',
+            'is_queue_handler' => env('TELEGRAM_BOT_IS_QUEUE_HANDLER', true),
             'is_save_database' => env('TELEGRAM_BOT_IS_SAVE_DATABASE', false),
             'is_technical_job' => env('TELEGRAM_BOT_IS_TECHNICAL_JOB', false),
             'db_connection' => env('DB_CONNECTION', 'mysql'),
@@ -18,6 +19,7 @@ return [
             'queue_webhook' => 'webhook_telegram', //null - no active queue
             'queue_send' => 'webhook_telegram', //null - no active queue
             'main_telegram_server_url' => env('TELEGRAM_SERVER_URL', 'https://api.telegram.org'),
+
 
             'method_messages' => [
                 'text' => App\Services\DefaultBotTelegramHandle\TextTelegramHandle::class,

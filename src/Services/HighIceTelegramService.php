@@ -51,7 +51,7 @@ class HighIceTelegramService
     public function setInfoBot(array $infoBot): HighIceTelegramService
     {
         $this->infoBot = $infoBot;
-        if(!isset($infoBot['main_telegram_server_url'])) {
+        if (!isset($infoBot['main_telegram_server_url'])) {
             $this->infoBot['main_telegram_server_url'] = "https://api.telegram.org";
         }
 
@@ -198,7 +198,8 @@ class HighIceTelegramService
     public function sendQR(): void
     {
         if (!$this->isValidated(['text'])) return;
-        $this->params['photo'] = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' . $this->params['text'];
+        $sizeQr = $this->params['size_qr'] ?? '250x250';
+        $this->params['photo'] = 'https://api.qrserver.com/v1/create-qr-code/?size=' . $sizeQr . '&data=' . $this->params['text'];
         $this->partUrl = '/sendPhoto';
         $this->sendRequest();
     }
@@ -231,7 +232,7 @@ class HighIceTelegramService
     private function sendRequest(): void
     {
         if (!isset($this->params['chat_id'])) return;
-        $this->response = Http::timeout(30)->post($this->infoBot['main_telegram_server_url'].'/bot' . $this->infoBot['token'] . $this->partUrl, $this->params);
+        $this->response = Http::timeout(30)->post($this->infoBot['main_telegram_server_url'] . '/bot' . $this->infoBot['token'] . $this->partUrl, $this->params);
         $this->saveAnswer($this->response);
     }
 
@@ -242,9 +243,9 @@ class HighIceTelegramService
     public function getUrlFile(): string|null|array
     {
         if (!$this->isValidated(['file_id'])) return null;
-        $infoFile = Http::post($this->infoBot['main_telegram_server_url'].'/bot' . $this->infoBot['token'] . '/getFile?file_id=' . $this->params['file_id']);
-        if($infoFile['ok'] && isset($infoFile['result']['file_path'])) {
-            return $this->infoBot['main_telegram_server_url']."/file/bot" . $this->infoBot['token'] . "/{$infoFile['result']['file_path']}";
+        $infoFile = Http::post($this->infoBot['main_telegram_server_url'] . '/bot' . $this->infoBot['token'] . '/getFile?file_id=' . $this->params['file_id']);
+        if ($infoFile['ok'] && isset($infoFile['result']['file_path'])) {
+            return $this->infoBot['main_telegram_server_url'] . "/file/bot" . $this->infoBot['token'] . "/{$infoFile['result']['file_path']}";
         }
         return null;
     }
@@ -272,11 +273,11 @@ class HighIceTelegramService
     {
         if (!is_null($answer) && isset($answer['result']['message_id'])) {
             $this->sendedMessageId = intval($answer['result']['message_id']) ?? null;
-            if(!is_null($this->saveModelSentedMessage)) {
-                try{
+            if (!is_null($this->saveModelSentedMessage)) {
+                try {
                     $this->saveModelSentedMessage->{$this->fieldSaveModelSentedMessage} = $this->sendedMessageId;
                     $this->saveModelSentedMessage->save();
-                }catch (\Exception $exception) {
+                } catch (\Exception $exception) {
                     Log::error($exception->getMessage());
                 }
             }

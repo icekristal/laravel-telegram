@@ -17,6 +17,7 @@ class MainTelegramHandle
     public $keyboard = null;
     public $image = null;
     public $file = null;
+    public $parseMode = null;
 
     public bool $showAlert = false;
     public $cacheTime = 1;
@@ -42,6 +43,7 @@ class MainTelegramHandle
             'cache_time' => $this->cacheTime,
             'url' => $this->url,
             'caption' => $this->caption,
+            'parse_mode' => $this->parseMode ?? null,
         ];
     }
 }
