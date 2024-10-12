@@ -128,7 +128,8 @@ class IceTelegramJob implements ShouldQueue
             $paramCallback = [
                 'callback_query_id' => $telegram->data['id'],
                 'text' => $infoAnswerUser['callback_message'] ?? ' ',
-                'show_alert' => boolval($infoAnswerUser['show_alert']) ?? false
+                'show_alert' => boolval($infoAnswerUser['show_alert']) ?? false,
+                'chat_id' => $telegram->from['id'],
             ];
 
             if (isset($infoAnswerUser['url'])) {
