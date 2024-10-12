@@ -22,7 +22,7 @@ class WebhookController extends BaseController
                 if($infoBot['is_queue_handler']) {
                     dispatch(new IceTelegramJob($request->all(), $infoBot))->onQueue($infoBot['queue_webhook'] ?? 'default');
                 }else{
-                    dispatch_sync(new IceTelegramJob($request->all(), $infoBot))->onQueue($infoBot['queue_webhook'] ?? 'default');
+                    dispatch_sync(new IceTelegramJob($request->all(), $infoBot));
                 }
             }
 
