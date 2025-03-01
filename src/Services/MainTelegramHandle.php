@@ -8,6 +8,7 @@ class MainTelegramHandle
 {
 
     protected IceTelegramService|null $telegramService = null;
+
     protected array|null $botInfo = null;
     public $onlyMessage = null;
     public $onlyReaction = null;
