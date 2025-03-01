@@ -4,9 +4,7 @@ namespace Icekristal\LaravelTelegram\Services;
 
 use Icekristal\LaravelTelegram\Facades\IceTelegram;
 use Icekristal\LaravelTelegram\Models\ServiceTelegram;
-use Icekristal\LaravelTelegram\Models\ServiceTelegramOwnerMessage;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class IceTelegramService
@@ -101,8 +99,11 @@ class IceTelegramService
      */
     public function sendMessage(array $params): void
     {
-        if(isset($params['is_edit_message']) && $params['is_edit_message'] && !is_null($this->messageId)) {
-            $params['message_id'] = $this->messageId;
+        $params['message_id'] = $this->messageId;
+        if (isset($params['is_delete_last_message']) && $params['is_delete_last_message']) {
+            $this->deleteMessage($params);
+        }
+        if (isset($params['is_edit_message']) && $params['is_edit_message'] && !is_null($this->messageId)) {
             $this->editMessage($params);
         } else {
             IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendMessage();
