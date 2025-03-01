@@ -82,6 +82,7 @@ class IceTelegramJob implements ShouldQueue
                 'chat_id' => $telegram->from['id'],
                 'text' => $infoAnswerUser['only_message'],
                 'is_edit_message' => $infoAnswerUser['is_reactive_edit_message'] ?? false,
+                'is_delete_last_message' => $infoAnswerUser['is_delete_last_message'] ?? false,
             ];
             if(isset($infoAnswerUser['parse_mode']) && !is_null($infoAnswerUser['parse_mode'])) {
                 $data['parse_mode'] = $infoAnswerUser['parse_mode'];
@@ -110,6 +111,7 @@ class IceTelegramJob implements ShouldQueue
                 'chat_id' => $telegram->from['id'],
                 'text' => $infoAnswerUser['message'],
                 'is_edit_message' => $infoAnswerUser['is_reactive_edit_message'] ?? false,
+                'is_delete_last_message' => $infoAnswerUser['is_delete_last_message'] ?? false,
             ];
 
             if ($telegram->isEntitiesBot) {
