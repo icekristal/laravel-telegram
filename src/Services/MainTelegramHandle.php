@@ -22,6 +22,7 @@ class MainTelegramHandle
     public bool $showAlert = false;
     public $cacheTime = 1;
     public $url = null;
+    public bool $isReactiveEditMessage = false;
 
     public function __construct($telegramService, $botInfo)
     {
@@ -44,6 +45,7 @@ class MainTelegramHandle
             'url' => $this->url,
             'caption' => $this->caption,
             'parse_mode' => $this->parseMode ?? null,
+            'is_reactive_edit_message' => $this->isReactiveEditMessage ?? null,
         ];
     }
 }

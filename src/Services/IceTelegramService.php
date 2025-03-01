@@ -95,21 +95,53 @@ class IceTelegramService
     }
 
 
+    /**
+     * @param array $params
+     * @return void
+     */
     public function sendMessage(array $params): void
     {
-        IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendMessage();
+        if(isset($params['is_edit_message']) && $params['is_edit_message'] && !is_null($this->messageId)) {
+            $params['message_id'] = $this->messageId;
+            $this->editMessage($params);
+        } else {
+            IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendMessage();
+        }
+
     }
 
+    /**
+     * @param array $params
+     * @return void
+     */
+    public function editMessage(array $params): void
+    {
+        IceTelegram::setInfoBot($this->infoBot)->setParams($params)->editMessageText();
+    }
+
+    /**
+     * @param array $params
+     * @return void
+     */
     public function deleteMessage(array $params): void
     {
         IceTelegram::setInfoBot($this->infoBot)->setParams($params)->deleteMessage();
     }
 
+    /**
+     * @param array $params
+     * @return void
+     */
     public function sendCallback(array $params): void
     {
         IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendCallback();
     }
 
+    /**
+     * @param array $params
+     * @param string $text
+     * @return void
+     */
     public function sendQR(array $params, string $text): void
     {
         $params['text'] = $text;
