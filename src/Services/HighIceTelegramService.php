@@ -124,7 +124,7 @@ class HighIceTelegramService
      */
     public function deleteLastMessage(): void
     {
-        $chatId = $this->chatId ?? null;
+        $chatId = $this->params['chat_id'] ?? $this->chatId ?? null;
         $lastMessageId = ServiceTelegramOwnerMessage::query()->where('chat_id', $chatId)->latest()->first()?->message_id ?? null;
         if(!is_null($lastMessageId)) {
             $this->params['message_id'] = $lastMessageId;
