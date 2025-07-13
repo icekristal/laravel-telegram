@@ -83,6 +83,7 @@ class IceTelegramJob implements ShouldQueue
                 'text' => $infoAnswerUser['only_message'],
                 'is_edit_message' => $infoAnswerUser['is_reactive_edit_message'] ?? false,
                 'is_delete_last_message' => $infoAnswerUser['is_delete_last_message'] ?? false,
+                'disable_web_page_preview' => $infoAnswerUser['is_disable_web_page_preview'] ?? true,
             ];
             if(isset($infoAnswerUser['parse_mode']) && !is_null($infoAnswerUser['parse_mode'])) {
                 $data['parse_mode'] = $infoAnswerUser['parse_mode'];

@@ -25,6 +25,7 @@ class MainTelegramHandle
     public $url = null;
     public bool $isReactiveEditMessage = false;
     public bool $isDeleteLastMessage = false;
+    public bool $is_disable_web_page_preview = true;
 
     public function __construct($telegramService, $botInfo)
     {
@@ -49,6 +50,7 @@ class MainTelegramHandle
             'parse_mode' => $this->parseMode ?? null,
             'is_reactive_edit_message' => $this->isReactiveEditMessage ?? null,
             'is_delete_last_message' => $this->isDeleteLastMessage ?? null,
+            'is_disable_web_page_preview' => $this->is_disable_web_page_preview ?? true,
         ];
     }
 }
