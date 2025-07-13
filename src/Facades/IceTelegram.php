@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static void editMessageText()
  * @method static void sendMessage()
  * @method static void deleteMessage()
+ * @method static void deleteLastMessage()
  * @method static void sendCallback()
  * @method static void sendPhoto()
  * @method static void sendDocument()

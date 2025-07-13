@@ -118,6 +118,22 @@ class HighIceTelegramService
     }
 
     /**
+     * Send delete message
+     *
+     * @return void
+     */
+    public function deleteLastMessage(): void
+    {
+        $chatId = $this->chatId ?? null;
+        $lastMessageId = ServiceTelegramOwnerMessage::query()->where('chat_id', $chatId)->latest()->first()?->message_id ?? null;
+        if(!is_null($lastMessageId)) {
+            $this->params['message_id'] = $lastMessageId;
+            $this->partUrl = '/deleteMessage';
+            $this->sendRequest();
+        }
+    }
+
+    /**
      * send callback
      *
      * @return void
