@@ -135,7 +135,12 @@ class IceTelegramService
      */
     public function sendCallback(array $params): void
     {
-        IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendCallback();
+        if (isset($params['is_edit_message']) && $params['is_edit_message'] && !is_null($this->messageId)) {
+            $this->editMessage($params);
+        } else {
+            IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendCallback();
+        }
+
     }
 
     /**
