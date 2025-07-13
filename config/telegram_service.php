@@ -37,4 +37,6 @@ return [
 
     'default_bot' => 'first_bot',
 
+    'is_enable_webhook_cache' => env('TELEGRAM_BOT_IS_WEBHOOK_CACHE', false),
+
 ];

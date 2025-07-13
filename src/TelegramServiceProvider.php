@@ -2,6 +2,7 @@
 
 namespace Icekristal\LaravelTelegram;
 
+use Icekristal\LaravelTelegram\Services\DeeplinkService;
 use Icekristal\LaravelTelegram\Services\HighIceTelegramService;
 use Illuminate\Support\ServiceProvider;
 
@@ -11,6 +12,7 @@ class TelegramServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind('high.ice.telegram', HighIceTelegramService::class);
+        $this->app->bind('high.ice.telegram_deeplink', DeeplinkService::class);
         $this->registerConfig();
         $this->registerTranslations();
         $this->registerRoutes();
@@ -52,6 +54,11 @@ class TelegramServiceProvider extends ServiceProvider
         if (!class_exists('CreateServiceTelegramOwnerMessagesTable')) {
             $this->publishes([
                 __DIR__ . '/../database/migrations/create_service_telegram_owner_messages_table.php.stub' => database_path('migrations/' . date('Y_m_d_His', time()) . '_create_service_telegram_owner_messages_table.php'),
+            ], 'migrations');
+        }
+        if (!class_exists('CreateDeeplinksTable')) {
+            $this->publishes([
+                __DIR__ . '/../database/migrations/create_deeplinks_table.php.stub' => database_path('migrations/' . date('Y_m_d_His', time()) . '_create_deeplinks_table.php'),
             ], 'migrations');
         }
     }

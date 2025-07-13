@@ -32,7 +32,7 @@ class IceTelegramService
 
     public function handle(array $data): void
     {
-        if (isset($data['message'])) {
+        if (isset($data['message']) || isset($data['edited_message'])) {
             $this->typeInfo = 'message';
         } elseif (isset($data['callback_query'])) {
             $this->typeInfo = 'callback_query';
@@ -88,7 +88,7 @@ class IceTelegramService
             $this->owner = ServiceTelegram::query()->where('chat_id', $this->from['id'])->first()?->owner ?? null;
 
             IceTelegram::setInfoBot($this->infoBot)->setOwner($this->owner)->saveAnswer($data);
-            app()->setLocale($data['message']['from']['language_code'] ?? 'ru');
+            app()->setLocale($data['message']['from']['language_code'] ?? $data['edited_message']['from']['language_code'] ?? 'ru');
         }
     }
 
