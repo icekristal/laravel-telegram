@@ -113,6 +113,7 @@ class IceTelegramJob implements ShouldQueue
                 'text' => $infoAnswerUser['message'],
                 'is_edit_message' => $infoAnswerUser['is_reactive_edit_message'] ?? false,
                 'is_delete_last_message' => $infoAnswerUser['is_delete_last_message'] ?? false,
+                'disable_web_page_preview' => $infoAnswerUser['is_disable_web_page_preview'] ?? true,
             ];
 
             if ($telegram->isEntitiesBot) {
@@ -135,6 +136,7 @@ class IceTelegramJob implements ShouldQueue
                 'text' => $infoAnswerUser['callback_message'] ?? ' ',
                 'show_alert' => boolval($infoAnswerUser['show_alert']) ?? false,
                 'is_edit_message' => $infoAnswerUser['is_reactive_edit_message'] ?? false,
+                'disable_web_page_preview' => $infoAnswerUser['is_disable_web_page_preview'] ?? true,
                 'chat_id' => $telegram->from['id'],
             ];
 
