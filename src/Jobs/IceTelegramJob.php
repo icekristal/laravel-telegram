@@ -95,9 +95,12 @@ class IceTelegramJob implements ShouldQueue
         }
 
         if (isset($infoAnswerUser['image'])) {
-            $telegram->sendPhoto([
-                'caption' => $infoAnswerUser['caption'] ?? null,
-            ], $infoAnswerUser['image']);
+            $data['caption'] = $infoAnswerUser['caption'] ?? null;
+            isset($infoAnswerUser['keyboard']) ? $data['reply_markup'] = json_encode($infoAnswerUser['keyboard']) : '';
+            if(isset($infoAnswerUser['parse_mode']) && !is_null($infoAnswerUser['parse_mode'])) {
+                $data['parse_mode'] = $infoAnswerUser['parse_mode'];
+            }
+            $telegram->sendPhoto($data, $infoAnswerUser['image']);
         }
 
 
