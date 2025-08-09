@@ -98,6 +98,7 @@ class IceTelegramService
     /**
      * @param array $params
      * @return void
+     * @throws ConnectionException
      */
     public function sendMessage(array $params): void
     {
@@ -116,6 +117,7 @@ class IceTelegramService
     /**
      * @param array $params
      * @return void
+     * @throws ConnectionException
      */
     public function editMessage(array $params): void
     {
@@ -125,6 +127,7 @@ class IceTelegramService
     /**
      * @param array $params
      * @return void
+     * @throws ConnectionException
      */
     public function deleteMessage(array $params): void
     {
