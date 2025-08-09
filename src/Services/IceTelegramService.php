@@ -165,14 +165,18 @@ class IceTelegramService
 
     public function sendPhoto(array $params, string $url): void
     {
-        $params['message_id'] = $this->messageId;
-        if (isset($params['is_delete_last_message']) && $params['is_delete_last_message']) {
-            $this->deleteMessage($params);
-        }
-
         $params['photo'] = $url;
         $params['chat_id'] = $params['chat_id'] ?? $this->from['id'];
-        IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendPhoto();
+        $params['message_id'] = $this->messageId;
+        if (isset($params['is_edit_message']) && $params['is_edit_message'] && !is_null($this->messageId)) {
+            $this->editMessage($params);
+        }else{
+            if (isset($params['is_delete_last_message']) && $params['is_delete_last_message']) {
+                $this->deleteMessage($params);
+            }
+            IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendPhoto();
+        }
+
     }
 
 
