@@ -4,6 +4,8 @@ namespace Icekristal\LaravelTelegram\Services;
 
 use Icekristal\LaravelTelegram\Facades\IceTelegram;
 use Icekristal\LaravelTelegram\Models\ServiceTelegram;
+use Icekristal\LaravelTelegram\Models\ServiceTelegramOwnerMessage;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
@@ -43,7 +45,7 @@ class IceTelegramService
         $this->data = $data['message'] ?? $data['callback_query'] ?? $data['message_reaction'] ?? null;
         $this->from = $data['message']['from'] ?? $data['callback_query']['from'] ?? $data['message_reaction']['user'] ?? null;
         $this->type = '';
-        $this->messageId = $this?->data['message_id'] ?? $this?->data['message']['message_id'] ?? null;
+        $this->messageId = $this?->data['message_id'] ?? $this?->data['message']['message_id'] ?? ServiceTelegramOwnerMessage::query()->where('chat_id', $this->from['id'])->latest()->first()?->message_id ?? null;
 
         if (!is_null($this->from)) {
             if (isset($this->data['chat']) && (in_array($this->data['chat']['type'], ['group', 'supergroup']))) {
@@ -96,6 +98,7 @@ class IceTelegramService
     /**
      * @param array $params
      * @return void
+     * @throws ConnectionException
      */
     public function sendMessage(array $params): void
     {
@@ -114,6 +117,7 @@ class IceTelegramService
     /**
      * @param array $params
      * @return void
+     * @throws ConnectionException
      */
     public function editMessage(array $params): void
     {
@@ -123,6 +127,7 @@ class IceTelegramService
     /**
      * @param array $params
      * @return void
+     * @throws ConnectionException
      */
     public function deleteMessage(array $params): void
     {
@@ -132,6 +137,7 @@ class IceTelegramService
     /**
      * @param array $params
      * @return void
+     * @throws ConnectionException
      */
     public function sendCallback(array $params): void
     {
@@ -147,6 +153,7 @@ class IceTelegramService
      * @param array $params
      * @param string $text
      * @return void
+     * @throws ConnectionException
      */
     public function sendQR(array $params, string $text): void
     {
@@ -163,11 +170,23 @@ class IceTelegramService
         IceTelegram::setInfoBot($this->infoBot)->setParams($paramsSend)->sendLocation();
     }
 
+    /**
+     * @throws ConnectionException
+     */
     public function sendPhoto(array $params, string $url): void
     {
         $params['photo'] = $url;
         $params['chat_id'] = $params['chat_id'] ?? $this->from['id'];
-        IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendPhoto();
+        $params['message_id'] = $this->messageId ?? ServiceTelegramOwnerMessage::query()->where('chat_id', $params['chat_id'])->latest()->first()?->message_id ?? null;
+        if (isset($params['is_edit_message']) && $params['is_edit_message'] && !is_null($this->messageId)) {
+            $this->editMessage($params);
+        }else{
+            if (isset($params['is_delete_last_message']) && $params['is_delete_last_message']) {
+                $this->deleteMessage($params);
+            }
+            IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendPhoto();
+        }
+
     }
 
 

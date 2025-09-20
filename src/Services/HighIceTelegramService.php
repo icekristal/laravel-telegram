@@ -3,6 +3,7 @@
 namespace Icekristal\LaravelTelegram\Services;
 
 use Icekristal\LaravelTelegram\Models\ServiceTelegramOwnerMessage;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -85,6 +86,7 @@ class HighIceTelegramService
      * Send only message
      *
      * @return void
+     * @throws ConnectionException
      */
     public function sendMessage(): void
     {
@@ -97,6 +99,7 @@ class HighIceTelegramService
      * Update text message
      *
      * @return void
+     * @throws ConnectionException
      */
     public function editMessageText(): void
     {
@@ -109,6 +112,7 @@ class HighIceTelegramService
      * Send delete message
      *
      * @return void
+     * @throws ConnectionException
      */
     public function deleteMessage(): void
     {
@@ -121,6 +125,7 @@ class HighIceTelegramService
      * Send delete message
      *
      * @return void
+     * @throws ConnectionException
      */
     public function deleteLastMessage(): void
     {
@@ -137,6 +142,7 @@ class HighIceTelegramService
      * send callback
      *
      * @return void
+     * @throws ConnectionException
      */
     public function sendCallback(): void
     {
@@ -158,6 +164,7 @@ class HighIceTelegramService
      *  reply_markup -
      *
      * @return void
+     * @throws ConnectionException
      */
     public function sendPhoto(): void
     {
@@ -181,6 +188,7 @@ class HighIceTelegramService
      *  reply_markup -
      *
      * @return void
+     * @throws ConnectionException
      */
     public function sendDocument(): void
     {
@@ -198,6 +206,7 @@ class HighIceTelegramService
      * longitude*
      *
      * @return void
+     * @throws ConnectionException
      */
     public function sendLocation(): void
     {
@@ -210,6 +219,7 @@ class HighIceTelegramService
      * Send QR
      *
      * @return void
+     * @throws ConnectionException
      */
     public function sendQR(): void
     {
@@ -244,6 +254,7 @@ class HighIceTelegramService
      * Send telegram api request
      *
      * @return void
+     * @throws ConnectionException
      */
     private function sendRequest(): void
     {

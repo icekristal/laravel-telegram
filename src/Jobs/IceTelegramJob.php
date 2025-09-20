@@ -8,6 +8,7 @@ use Icekristal\LaravelTelegram\Services\IceTelegramService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
@@ -34,6 +35,7 @@ class IceTelegramJob implements ShouldQueue
      *
      *
      * @return void
+     * @throws ConnectionException
      */
     public function handle(): void
     {
@@ -95,9 +97,14 @@ class IceTelegramJob implements ShouldQueue
         }
 
         if (isset($infoAnswerUser['image'])) {
-            $telegram->sendPhoto([
-                'caption' => $infoAnswerUser['caption'] ?? null,
-            ], $infoAnswerUser['image']);
+            $data['caption'] = $infoAnswerUser['caption'] ?? null;
+            $data['is_edit_message'] = $infoAnswerUser['is_reactive_edit_message'] ?? false;
+            $data['is_delete_last_message'] = $infoAnswerUser['is_delete_last_message'] ?? false;
+            isset($infoAnswerUser['keyboard']) ? $data['reply_markup'] = json_encode($infoAnswerUser['keyboard']) : '';
+            if(isset($infoAnswerUser['parse_mode']) && !is_null($infoAnswerUser['parse_mode'])) {
+                $data['parse_mode'] = $infoAnswerUser['parse_mode'];
+            }
+            $telegram->sendPhoto($data, $infoAnswerUser['image']);
         }
 
 
@@ -136,6 +143,7 @@ class IceTelegramJob implements ShouldQueue
                 'text' => $infoAnswerUser['callback_message'] ?? ' ',
                 'show_alert' => boolval($infoAnswerUser['show_alert']) ?? false,
                 'is_edit_message' => $infoAnswerUser['is_reactive_edit_message'] ?? false,
+                'is_delete_last_message' => $infoAnswerUser['is_delete_last_message'] ?? false,
                 'disable_web_page_preview' => $infoAnswerUser['is_disable_web_page_preview'] ?? true,
                 'chat_id' => $telegram->from['id'],
             ];
