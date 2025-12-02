@@ -42,11 +42,14 @@ class IceTelegramService
             $this->typeInfo = 'message_reaction';
         }
 
-        $this->data = $data['message'] ?? $data['callback_query'] ?? $data['message_reaction'] ?? null;
-        $this->from = $data['message']['from'] ?? $data['callback_query']['from'] ?? $data['message_reaction']['user'] ?? null;
-        $this->type = '';
+
 
         try {
+
+            $this->data = $data['message'] ?? $data['callback_query'] ?? $data['message_reaction'] ?? $data['edited_message'] ?? null;
+            $this->from = $data['message']['from'] ?? $data['callback_query']['from'] ?? $data['message_reaction']['user'] ?? $data['edited_message']['from'] ?? null;
+            $this->type = '';
+
             $this->messageId =
                 $this?->data['message_id'] ??
                 $this?->data['message']['message_id'] ??
