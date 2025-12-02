@@ -50,9 +50,8 @@ class IceTelegramService
             $this->messageId =
                 $this?->data['message_id'] ??
                 $this?->data['message']['message_id'] ??
-                ServiceTelegramOwnerMessage::query()->where('chat_id', $this->from['id'])?->latest()?->first()?->message_id ??
+                ServiceTelegramOwnerMessage::query()->where('chat_id', $this?->from['id'])?->latest()?->first()?->message_id ??
                 null;
-
         }catch (ConnectionException $e){
             $this->messageId = null;
         }
