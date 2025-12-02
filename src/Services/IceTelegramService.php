@@ -47,6 +47,10 @@ class IceTelegramService
         $this->type = '';
         $this->messageId = $this?->data['message_id'] ?? $this?->data['message']['message_id'] ?? ServiceTelegramOwnerMessage::query()->where('chat_id', $this->from['id'])->latest()->first()?->message_id ?? null;
 
+        if(is_null($this->messageId)) {
+            return;
+        }
+
         if (!is_null($this->from)) {
             if (isset($this->data['chat']) && (in_array($this->data['chat']['type'], ['group', 'supergroup']))) {
                 $this->isGroupChat = true;
