@@ -45,8 +45,17 @@ class IceTelegramService
         $this->data = $data['message'] ?? $data['callback_query'] ?? $data['message_reaction'] ?? null;
         $this->from = $data['message']['from'] ?? $data['callback_query']['from'] ?? $data['message_reaction']['user'] ?? null;
         $this->type = '';
-        $this->messageId = $this?->data['message_id'] ?? $this?->data['message']['message_id'] ?? ServiceTelegramOwnerMessage::query()->where('chat_id', $this->from['id'])->latest()->first()?->message_id ?? null;
 
+        try {
+            $this->messageId =
+                $this?->data['message_id'] ??
+                $this?->data['message']['message_id'] ??
+                ServiceTelegramOwnerMessage::query()->where('chat_id', $this->from['id'])?->latest()?->first()?->message_id ??
+                null;
+
+        }catch (ConnectionException $e){
+            $this->messageId = null;
+        }
         if(is_null($this->messageId)) {
             return;
         }
