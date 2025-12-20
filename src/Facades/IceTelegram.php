@@ -33,6 +33,7 @@ class IceTelegram extends Facade
         return 'high.ice.telegram';
     }
 
+
     /**
      * @throws BindingResolutionException
      */
