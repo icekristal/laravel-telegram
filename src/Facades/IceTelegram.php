@@ -32,4 +32,12 @@ class IceTelegram extends Facade
     {
         return 'high.ice.telegram';
     }
+
+    /**
+     * @throws BindingResolutionException
+     */
+    protected static function resolveFacadeInstance($name)
+    {
+        return app()->make($name);
+    }
 }

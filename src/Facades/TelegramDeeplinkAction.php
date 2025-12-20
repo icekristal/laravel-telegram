@@ -5,6 +5,7 @@ namespace Icekristal\LaravelTelegram\Facades;
 
 use Icekristal\LaravelTelegram\Models\Deeplink;
 use Icekristal\LaravelTelegram\Services\DeeplinkService;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\Facade;
 
 /**
@@ -19,5 +20,13 @@ class TelegramDeeplinkAction extends Facade
     protected static function getFacadeAccessor(): string
     {
         return 'high.ice.telegram_deeplink';
+    }
+
+    /**
+     * @throws BindingResolutionException
+     */
+    protected static function resolveFacadeInstance($name)
+    {
+        return app()->make($name);
     }
 }

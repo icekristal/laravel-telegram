@@ -110,9 +110,7 @@ class MainTelegramHandle
     }
 }
 ```
-
-
-v3 >  
+ 
 Notification
 ```php
     public function via($notifiable): array
@@ -141,7 +139,6 @@ IceTelegram::sendLocation();
 IceTelegram::sendQR();
 ```
 
-v5.1 >
 ```php
 set config param:
  'main_telegram_server_url' => env('TELEGRAM_SERVER_URL', 'https://api.telegram.org'),
