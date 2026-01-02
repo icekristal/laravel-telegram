@@ -50,6 +50,10 @@ class IceTelegramService
             $this->from = $data['message']['from'] ?? $data['callback_query']['from'] ?? $data['message_reaction']['user'] ?? $data['edited_message']['from'] ?? null;
             $this->type = '';
 
+            if(is_null($this->data) || is_null($this->from)) {
+                return;
+            }
+
             $this->messageId =
                 $this?->data['message_id'] ??
                 $this?->data['message']['message_id'] ??
