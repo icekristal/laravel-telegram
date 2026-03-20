@@ -20,6 +20,8 @@ return [
             'queue_webhook' => 'webhook_telegram', //null - no active queue
             'queue_send' => 'webhook_telegram', //null - no active queue
             'main_telegram_server_url' => env('TELEGRAM_SERVER_URL', 'https://api.telegram.org'),
+            'proxy_url' => env('TELEGRAM_PROXY', null),
+            'timeout' => env('TELEGRAM_TIMEOUT', 30),
 
 
             'method_messages' => [

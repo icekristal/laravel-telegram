@@ -259,7 +259,15 @@ class HighIceTelegramService
     private function sendRequest(): void
     {
         if (!isset($this->params['chat_id'])) return;
-        $this->response = Http::timeout(30)->post($this->infoBot['main_telegram_server_url'] . '/bot' . $this->infoBot['token'] . $this->partUrl, $this->params);
+
+        $timeout = $this?->infoBot['timeout'] ?? 15;
+        $sendRequest = Http::timeout($timeout);
+        if(!is_null($this->infoBot['proxy_url'])) {
+            $sendRequest->withOptions([
+                'proxy' => $this->infoBot['proxy_url']
+            ]);
+        }
+        $this->response = $sendRequest->post($this->infoBot['main_telegram_server_url'] . '/bot' . $this->infoBot['token'] . $this->partUrl, $this->params);
         $this->saveAnswer($this->response);
     }
 
