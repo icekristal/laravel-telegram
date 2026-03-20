@@ -30,6 +30,7 @@ class HighIceTelegramService
         $this->infoBot['main_telegram_server_url'] = "https://api.telegram.org";
         $defaultBot = config('telegram_service.default_bot');
         $this->infoBot['token'] = config("telegram_service.bots.{$defaultBot}.token");
+        $this->infoBot['proxy_url'] = config("telegram_service.bots.{$defaultBot}.proxy_url");
     }
 
 
