@@ -235,11 +235,25 @@ class IceTelegramService
 
             $fullPath = rtrim($this->infoBot['path_save_files'], '/') . '/' . $name_our_new_file;
 
+            if($this->infoBot['is_active_log'] ?? false) {
+                info("WebhookController_Telegram _ FILE", [
+                    'nameTemp' => $nameTemp,
+                    'fullPath' => $fullPath,
+                    'response' => $response,
+                    'urlFile' => $urlFile,
+                ]);
+            }
+
             try {
                 if (copy($urlFile, $fullPath)) {
                     return $fullPath;
                 }
             } catch (\Exception $e) {
+                if($this->infoBot['is_active_log'] ?? false) {
+                    info("WebhookController_Telegram _ FILE", [
+                        'message' => $e->getMessage(),
+                    ]);
+                }
                 return false;
             }
         }
