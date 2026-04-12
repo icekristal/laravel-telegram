@@ -223,10 +223,10 @@ class IceTelegramService
 
         if ($response->successful() && $response['ok'] && $this->infoBot['is_save_files']) {
             $resultPath = $response['result']['file_path'];
-            $cleanPath = preg_replace('~^.*/bot[^/]+/~', '', $resultPath);
+            $cleanPath = preg_replace('~^.*/(bot)?\d+/~', '', $response['result']['file_path']);
 
             $urlFile = rtrim($this->infoBot['main_telegram_server_url'], '/')
-                . "/file/bot" . $this->infoBot['token'] . "/" . $cleanPath;
+                . "/file/bot" . $this->infoBot['token'] . "/" . ltrim($cleanPath, '/');
 
             $extension = pathinfo($resultPath, PATHINFO_EXTENSION);
 
