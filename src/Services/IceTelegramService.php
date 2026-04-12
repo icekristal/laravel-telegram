@@ -27,9 +27,8 @@ class IceTelegramService
     public function __construct(array $infoBot)
     {
         $this->infoBot = $infoBot;
-        if (!isset($infoBot['main_telegram_server_url'])) {
-            $this->infoBot['main_telegram_server_url'] = "https://api.telegram.org";
-        }
+        $defaultBot = config('telegram_service.default_bot');
+        $this->infoBot['main_telegram_server_url'] = config("telegram_service.bots.{$defaultBot}.main_telegram_server_url", "https://api.telegram.org");
     }
 
     public function handle(array $data): void
