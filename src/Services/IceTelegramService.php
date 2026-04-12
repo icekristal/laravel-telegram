@@ -217,23 +217,56 @@ class IceTelegramService
 
     public function getPathFile($fileId): bool|string
     {
-        $infoFile = Http::post($this->infoBot['main_telegram_server_url'] . '/bot' . $this->infoBot['token'] . '/getFile?file_id=' . $fileId);
-        if ($infoFile['ok'] && $this->infoBot['is_save_files']) {
-            $resultPath = $infoFile['result']['file_path'];
-            if (!Str::startsWith($resultPath, '/')) {
-                $resultPath = "/" . $resultPath;
+        $response = Http::post($this->infoBot['main_telegram_server_url'] . '/bot' . $this->infoBot['token'] . '/getFile', [
+            'file_id' => $fileId
+        ]);
+
+        if ($response->successful() && $response['ok'] && $this->infoBot['is_save_files']) {
+            $resultPath = $response['result']['file_path'];
+            $cleanPath = preg_replace('/^.*\/bot[^/]+\//', '', $resultPath);
+
+            $urlFile = rtrim($this->infoBot['main_telegram_server_url'], '/')
+                . "/file/bot" . $this->infoBot['token'] . "/" . $cleanPath;
+
+            $extension = pathinfo($resultPath, PATHINFO_EXTENSION);
+
+            $nameTemp = time() . "_" . Str::random(10);
+            $name_our_new_file = "t_" . $nameTemp . "." . $extension;
+
+            $fullPath = rtrim($this->infoBot['path_save_files'], '/') . '/' . $name_our_new_file;
+
+            try {
+                if (copy($urlFile, $fullPath)) {
+                    return $fullPath;
+                }
+            } catch (\Exception $e) {
+                return false;
             }
-            $urlFile = $this->infoBot['main_telegram_server_url'] . "/file/bot" . $this->infoBot['token'] . "{$resultPath}";
-            $ext = explode(".", $urlFile);
-            $lastInfo = end($ext);
-            $nameTemp = time() . "_" . rand(100000, 999999);
-            $name_our_new_file = "t_" . $nameTemp . "." . $lastInfo;
-            $fullPath = "{$this->infoBot['path_save_files']}" . $name_our_new_file;
-            copy($urlFile, $fullPath);
-            return $this->infoBot['path_save_files'] . $name_our_new_file;
         }
+
         return false;
     }
+
+
+//    public function getPathFile($fileId): bool|string
+//    {
+//        $infoFile = Http::post($this->infoBot['main_telegram_server_url'] . '/bot' . $this->infoBot['token'] . '/getFile?file_id=' . $fileId);
+//        if ($infoFile['ok'] && $this->infoBot['is_save_files']) {
+//            $resultPath = $infoFile['result']['file_path'];
+//            if (!Str::startsWith($resultPath, '/')) {
+//                $resultPath = "/" . $resultPath;
+//            }
+//            $urlFile = $this->infoBot['main_telegram_server_url'] . "/file/bot" . $this->infoBot['token'] . "{$resultPath}";
+//            $ext = explode(".", $urlFile);
+//            $lastInfo = end($ext);
+//            $nameTemp = time() . "_" . rand(100000, 999999);
+//            $name_our_new_file = "t_" . $nameTemp . "." . $lastInfo;
+//            $fullPath = "{$this->infoBot['path_save_files']}" . $name_our_new_file;
+//            copy($urlFile, $fullPath);
+//            return $this->infoBot['path_save_files'] . $name_our_new_file;
+//        }
+//        return false;
+//    }
 
     public function getUrlFile($fileId): string|null
     {
