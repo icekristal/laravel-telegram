@@ -2,6 +2,8 @@
 
 namespace Icekristal\LaravelTelegram\Services;
 
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Translation\Translator;
 use JetBrains\PhpStorm\ArrayShape;
 
 class MainTelegramHandle
@@ -52,5 +54,11 @@ class MainTelegramHandle
             'is_delete_last_message' => $this->isDeleteLastMessage ?? null,
             'is_disable_web_page_preview' => $this->is_disable_web_page_preview ?? true,
         ];
+    }
+
+
+    protected function setMessageTranslate($key, $param = []): Application|Translator|string|array|null
+    {
+        return __("telegram_service.{$key}", $param);
     }
 }
