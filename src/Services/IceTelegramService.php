@@ -12,106 +12,117 @@ use Illuminate\Support\Str;
 class IceTelegramService
 {
     public mixed $typeInfo = null;
-    public mixed $data;
+    public mixed $data = null;
     public array $infoBot;
     public bool $isGroupChat = false;
     public bool $isEntitiesBot = false;
-    public mixed $from;
-    public mixed $type;
-    public mixed $owner;
-    public mixed $messageId;
+    public mixed $from = null;
+    public ?string $type = null;
+    public mixed $owner = null;
+    public mixed $messageId = null;
     public mixed $callbackQuery = null;
     public mixed $messageReaction = null;
-
 
     public function __construct(array $infoBot)
     {
         $this->infoBot = $infoBot;
         $defaultBot = config('telegram_service.default_bot');
-        $this->infoBot['main_telegram_server_url'] = config("telegram_service.bots.{$defaultBot}.main_telegram_server_url", "https://api.telegram.org");
+        $this->infoBot['main_telegram_server_url'] = rtrim(config("telegram_service.bots.{$defaultBot}.main_telegram_server_url", "https://api.telegram.org"), '/');
     }
 
+    /**
+     * @param array $data
+     * @return void
+     */
     public function handle(array $data): void
     {
-        if (isset($data['message']) || isset($data['edited_message'])) {
-            $this->typeInfo = 'message';
-        } elseif (isset($data['callback_query'])) {
-            $this->typeInfo = 'callback_query';
-        } elseif (isset($data['message_reaction'])) {
-            $this->typeInfo = 'message_reaction';
-        }
+        $this->typeInfo = match(true) {
+            isset($data['message']) => 'message',
+            isset($data['edited_message']) => 'message',
+            isset($data['callback_query']) => 'callback_query',
+            isset($data['message_reaction']) => 'message_reaction',
+            default => null,
+        };
 
+        if (!$this->typeInfo) return;
 
+        $key = isset($data['edited_message']) ? 'edited_message' : $this->typeInfo;
+        $this->data = $data[$key] ?? null;
+        $this->from = $this->data['from'] ?? $data['message_reaction']['user'] ?? null;
 
-        try {
+        if (empty($this->data) || empty($this->from)) return;
 
-            $this->data = $data['message'] ?? $data['callback_query'] ?? $data['message_reaction'] ?? $data['edited_message'] ?? null;
-            $this->from = $data['message']['from'] ?? $data['callback_query']['from'] ?? $data['message_reaction']['user'] ?? $data['edited_message']['from'] ?? null;
-            $this->type = '';
+        $this->messageId = $this->data['message_id']
+            ?? $this->data['message']['message_id']
+            ?? $this->getLastOwnerMessageId($this->from['id']);
 
-            if(is_null($this->data) || is_null($this->from)) {
-                return;
+        if (!$this->messageId) return;
+
+        $this->processChatData();
+        $this->determineMessageType();
+
+        $this->owner = ServiceTelegram::query()->where('chat_id', $this->from['id'])->value('owner');
+
+        IceTelegram::setInfoBot($this->infoBot)->setOwner($this->owner)->saveAnswer($data);
+        app()->setLocale($this->from['language_code'] ?? 'ru');
+    }
+
+    /**
+     * @return void
+     */
+    private function processChatData(): void
+    {
+        if (isset($this->data['chat']) && in_array($this->data['chat']['type'], ['group', 'supergroup'])) {
+            $this->isGroupChat = true;
+            $this->from['id'] = $this->data['chat']['id'];
+
+            $fullNameBot = "@" . ($this->infoBot['name'] ?? '');
+            if (isset($this->data['entities']) && str_contains($this->data['text'] ?? '', $fullNameBot)) {
+                $this->isEntitiesBot = true;
             }
-
-            $this->messageId =
-                $this?->data['message_id'] ??
-                $this?->data['message']['message_id'] ??
-                ServiceTelegramOwnerMessage::query()->where('chat_id', $this?->from['id'])?->latest()?->first()?->message_id ??
-                null;
-        }catch (ConnectionException $e){
-            $this->messageId = null;
         }
-        if(is_null($this->messageId)) {
+
+        $this->from['username'] ??= "#" . rand(1000, 999999999);
+        $this->from['alias'] = str_starts_with($this->from['username'], '#') ? $this->from['username'] : "@{$this->from['username']}";
+    }
+
+    /**
+     * @return void
+     */
+    private function determineMessageType(): void
+    {
+        if ($this->typeInfo === 'callback_query') {
+            $this->type = 'callback_query';
+            $this->callbackQuery = $this->data;
             return;
         }
 
-        if (!is_null($this->from)) {
-            if (isset($this->data['chat']) && (in_array($this->data['chat']['type'], ['group', 'supergroup']))) {
-                $this->isGroupChat = true;
-                $this->from['id'] = $this->data['chat']['id'];
-                $fullNameBot = "@" . $this->infoBot['name'] ?? null;
-                if (isset($this->data['entities']) && str_contains($this?->data['text'], $fullNameBot)) {
-                    $this->isEntitiesBot = true;
-                }
+        if ($this->typeInfo === 'message_reaction') {
+            $this->type = 'message_reaction';
+            $this->messageReaction = $this->data;
+            return;
+        }
+
+        $mediaTypes = ['video', 'video_note', 'voice', 'photo', 'document', 'text', 'location'];
+        foreach ($mediaTypes as $mediaType) {
+            if (isset($this->data[$mediaType])) {
+                $this->type = $mediaType;
+                break;
             }
-
-            if (!isset($this->from['username'])) {
-                $num = rand(1000, 999999999);
-                $this->from['username'] = "#{$num}";
-                $this->from['alias'] = $this->from['username'];
-            } else {
-                $this->from['alias'] = "@{$this->from['username']}";
-            }
-
-            if (isset($this->data['video'])) {
-                $this->type = 'video';
-            } elseif (isset($this->data['video_note'])) {
-                $this->type = 'video_note';
-            } elseif (isset($this->data['voice'])) {
-                $this->type = 'voice';
-            } elseif (isset($this->data['photo'])) {
-                $this->type = 'photo';
-            } elseif (isset($this->data['document'])) {
-                $this->type = 'document';
-            } elseif (isset($this->data['text'])) {
-                $this->type = 'text';
-            } elseif (isset($this->data['location'])) {
-                $this->type = 'location';
-            } elseif ($this->typeInfo == 'callback_query') {
-                $this->type = 'callback_query';
-                $this->callbackQuery = $this->data;
-            } elseif ($this->typeInfo == 'message_reaction') {
-                $this->type = 'message_reaction';
-                $this->messageReaction = $this->data;
-            }
-
-            $this->owner = ServiceTelegram::query()->where('chat_id', $this->from['id'])->first()?->owner ?? null;
-
-            IceTelegram::setInfoBot($this->infoBot)->setOwner($this->owner)->saveAnswer($data);
-            app()->setLocale($data['message']['from']['language_code'] ?? $data['edited_message']['from']['language_code'] ?? 'ru');
         }
     }
 
+    /**
+     * @param int|string $chatId
+     * @return int|null
+     */
+    private function getLastOwnerMessageId(int|string $chatId): ?int
+    {
+        return ServiceTelegramOwnerMessage::query()
+            ->where('chat_id', $chatId)
+            ->latest('id')
+            ->value('message_id');
+    }
 
     /**
      * @param array $params
@@ -121,15 +132,17 @@ class IceTelegramService
     public function sendMessage(array $params): void
     {
         $params['message_id'] = $this->messageId;
-        if (isset($params['is_delete_last_message']) && $params['is_delete_last_message']) {
+
+        if (!empty($params['is_delete_last_message'])) {
             $this->deleteMessage($params);
         }
-        if (isset($params['is_edit_message']) && $params['is_edit_message'] && !is_null($this->messageId)) {
+
+        if (!empty($params['is_edit_message']) && $this->messageId) {
             $this->editMessage($params);
-        } else {
-            IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendMessage();
+            return;
         }
 
+        IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendMessage();
     }
 
     /**
@@ -159,12 +172,11 @@ class IceTelegramService
      */
     public function sendCallback(array $params): void
     {
-        if (isset($params['is_edit_message']) && $params['is_edit_message'] && !is_null($this->messageId)) {
+        if (!empty($params['is_edit_message']) && $this->messageId) {
             $this->editMessage($params);
-        } else {
-            IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendCallback();
+            return;
         }
-
+        IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendCallback();
     }
 
     /**
@@ -179,116 +191,106 @@ class IceTelegramService
         IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendQR();
     }
 
+    /**
+     * @param array $params
+     * @return void
+     * @throws ConnectionException
+     */
     public function sendLocation(array $params): void
     {
-        $paramsSend = $params;
-        $paramsSend['chat_id'] = $params['chat_id'] ?? $this->from['id'] ?? null;
-        $paramsSend['latitude'] = $params['latitude'];
-        $paramsSend['longitude'] = $params['longitude'];
-        IceTelegram::setInfoBot($this->infoBot)->setParams($paramsSend)->sendLocation();
+        $params['chat_id'] ??= $this->from['id'] ?? null;
+        IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendLocation();
     }
 
     /**
+     * @param array $params
+     * @param string $url
+     * @return void
      * @throws ConnectionException
      */
     public function sendPhoto(array $params, string $url): void
     {
         $params['photo'] = $url;
-        $params['chat_id'] = $params['chat_id'] ?? $this->from['id'];
-        $params['message_id'] = $this->messageId ?? ServiceTelegramOwnerMessage::query()->where('chat_id', $params['chat_id'])->latest()->first()?->message_id ?? null;
-        if (isset($params['is_edit_message']) && $params['is_edit_message'] && !is_null($this->messageId)) {
+        $params['chat_id'] ??= $this->from['id'];
+        $params['message_id'] = $this->messageId ?? $this->getLastOwnerMessageId($params['chat_id']);
+
+        if (!empty($params['is_edit_message']) && $this->messageId) {
             $this->editMessage($params);
-        }else{
-            if (isset($params['is_delete_last_message']) && $params['is_delete_last_message']) {
-                $this->deleteMessage($params);
-            }
-            IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendPhoto();
+            return;
         }
 
+        if (!empty($params['is_delete_last_message'])) {
+            $this->deleteMessage($params);
+        }
+
+        IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendPhoto();
     }
 
-
+    /**
+     * @param array $params
+     * @param string $filePath
+     * @return void
+     * @throws ConnectionException
+     */
     public function sendDocument(array $params, string $filePath): void
     {
-        $params['chat_id'] = $params['chat_id'] ?? $this->from['id'];
+        $params['chat_id'] ??= $this->from['id'];
         $params['document'] = $filePath;
         IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendDocument();
     }
 
+    /**
+     * @param $fileId
+     * @return bool|string
+     */
     public function getPathFile($fileId): bool|string
     {
-        $response = Http::post($this->infoBot['main_telegram_server_url'] . '/bot' . $this->infoBot['token'] . '/getFile', [
+        $response = Http::post("{$this->infoBot['main_telegram_server_url']}/bot{$this->infoBot['token']}/getFile", [
             'file_id' => $fileId
         ]);
 
-        if ($response->successful() && $response['ok'] && $this->infoBot['is_save_files']) {
-            $resultPath = $response['result']['file_path'];
-            $quotedToken = preg_quote($this->infoBot['token'], '~');
-            $cleanPath = preg_replace("~^.*/{$quotedToken}/~", '', $resultPath);
-
-            $urlFile = rtrim($this->infoBot['main_telegram_server_url'], '/')
-                . "/file/bot" . $this->infoBot['token'] . "/" . ltrim($cleanPath, '/');
-
-            $extension = pathinfo($resultPath, PATHINFO_EXTENSION);
-
-            $nameTemp = time() . "_" . Str::random(10);
-            $name_our_new_file = "t_" . $nameTemp . "." . $extension;
-
-            $fullPath = rtrim($this->infoBot['path_save_files'], '/') . '/' . $name_our_new_file;
-
-            if($this->infoBot['is_active_log'] ?? false) {
-                info("WebhookController_Telegram _ FILE", [
-                    'nameTemp' => $nameTemp,
-                    'fullPath' => $fullPath,
-                    'response' => $response,
-                    'urlFile' => $urlFile,
-                ]);
-            }
-
-            try {
-                if (copy($urlFile, $fullPath)) {
-                    return $fullPath;
-                }
-            } catch (\Exception $e) {
-                if($this->infoBot['is_active_log'] ?? false) {
-                    info("WebhookController_Telegram _ FILE", [
-                        'message' => $e->getMessage(),
-                    ]);
-                }
-                return false;
-            }
+        if (!$response->successful() || !$response->json('ok') || empty($this->infoBot['is_save_files'])) {
+            return false;
         }
 
-        return false;
+        $resultPath = $response->json('result.file_path');
+        $urlFile = "{$this->infoBot['main_telegram_server_url']}/file/bot{$this->infoBot['token']}/{$resultPath}";
+
+        $extension = pathinfo($resultPath, PATHINFO_EXTENSION);
+        $fileName = "t_" . time() . "_" . Str::random(10) . "." . $extension;
+        $fullPath = rtrim($this->infoBot['path_save_files'], '/') . '/' . $fileName;
+
+        if (!empty($this->infoBot['is_active_log'])) {
+            info("WebhookController_Telegram _ FILE: Start downloading", ['url' => $urlFile, 'destination' => $fullPath]);
+        }
+
+        try {
+            $fileContent = Http::timeout(60)->get($urlFile)->body();
+            file_put_contents($fullPath, $fileContent);
+            return $fullPath;
+        } catch (\Exception $e) {
+            if (!empty($this->infoBot['is_active_log'])) {
+                info("WebhookController_Telegram _ FILE: Download failed", ['message' => $e->getMessage()]);
+            }
+            return false;
+        }
     }
 
-
-//    public function getPathFile($fileId): bool|string
-//    {
-//        $infoFile = Http::post($this->infoBot['main_telegram_server_url'] . '/bot' . $this->infoBot['token'] . '/getFile?file_id=' . $fileId);
-//        if ($infoFile['ok'] && $this->infoBot['is_save_files']) {
-//            $resultPath = $infoFile['result']['file_path'];
-//            if (!Str::startsWith($resultPath, '/')) {
-//                $resultPath = "/" . $resultPath;
-//            }
-//            $urlFile = $this->infoBot['main_telegram_server_url'] . "/file/bot" . $this->infoBot['token'] . "{$resultPath}";
-//            $ext = explode(".", $urlFile);
-//            $lastInfo = end($ext);
-//            $nameTemp = time() . "_" . rand(100000, 999999);
-//            $name_our_new_file = "t_" . $nameTemp . "." . $lastInfo;
-//            $fullPath = "{$this->infoBot['path_save_files']}" . $name_our_new_file;
-//            copy($urlFile, $fullPath);
-//            return $this->infoBot['path_save_files'] . $name_our_new_file;
-//        }
-//        return false;
-//    }
-
-    public function getUrlFile($fileId): string|null
+    /**
+     * @param $fileId
+     * @return string|null
+     */
+    public function getUrlFile($fileId): ?string
     {
-        $infoFile = Http::post($this->infoBot['main_telegram_server_url'] . '/bot' . $this->infoBot['token'] . '/getFile?file_id=' . $fileId);
-        if ($infoFile['ok'] && isset($infoFile['result']['file_path'])) {
-            return $this->infoBot['main_telegram_server_url'] . "/file/bot" . $this->infoBot['token'] . "/{$infoFile['result']['file_path']}";
+        $response = Http::get("{$this->infoBot['main_telegram_server_url']}/bot{$this->infoBot['token']}/getFile", [
+            'file_id' => $fileId
+        ]);
+
+        if ($response->successful() && $response->json('ok')) {
+            $filePath = $response->json('result.file_path');
+            return "{$this->infoBot['main_telegram_server_url']}/file/bot{$this->infoBot['token']}/{$filePath}";
         }
+
         return null;
     }
 }

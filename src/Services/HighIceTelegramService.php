@@ -6,37 +6,34 @@ use Icekristal\LaravelTelegram\Models\ServiceTelegramOwnerMessage;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Arr;
 
 class HighIceTelegramService
 {
-    private ?array $infoBot = null;
-
+    private array $infoBot = [];
     private mixed $chatId = null;
-
     public string $partUrl = '/sendMessage';
     public array $params = [];
-
     private mixed $owner = null;
-
     private ?int $sendedMessageId = null;
+    private mixed $saveModelSentedMessage = null;
+    private string $fieldSaveModelSentedMessage = 'message_id';
+    public mixed $response = null;
 
-    private $saveModelSentedMessage = null;
-    private $fieldSaveModelSentedMessage = 'message_id';
-
-    public $response = null;
-
+    /**
+     *
+     */
     public function __construct()
     {
         $defaultBot = config('telegram_service.default_bot');
-        $this->infoBot['main_telegram_server_url'] = config("telegram_service.bots.{$defaultBot}.main_telegram_server_url", "https://api.telegram.org");
-        $this->infoBot['token'] = config("telegram_service.bots.{$defaultBot}.token");
-        $this->infoBot['proxy_url'] = config("telegram_service.bots.{$defaultBot}.proxy_url");
+        $this->infoBot = [
+            'main_telegram_server_url' => rtrim(config("telegram_service.bots.{$defaultBot}.main_telegram_server_url", "https://api.telegram.org"), '/'),
+            'token' => config("telegram_service.bots.{$defaultBot}.token"),
+            'proxy_url' => config("telegram_service.bots.{$defaultBot}.proxy_url"),
+        ];
     }
 
-
     /**
-     * get info telegram bot
-     *
      * @return array
      */
     public function getInfoBot(): array
@@ -45,17 +42,13 @@ class HighIceTelegramService
     }
 
     /**
-     * set telegram bot from config
-     *
      * @param array $infoBot
-     * @return HighIceTelegramService
+     * @return $this
      */
-    public function setInfoBot(array $infoBot): HighIceTelegramService
+    public function setInfoBot(array $infoBot): self
     {
         $this->infoBot = $infoBot;
-        if (!isset($infoBot['main_telegram_server_url'])) {
-            $this->infoBot['main_telegram_server_url'] = "https://api.telegram.org";
-        }
+        $this->infoBot['main_telegram_server_url'] = rtrim($infoBot['main_telegram_server_url'] ?? "https://api.telegram.org", '/');
 
         return $this;
     }
@@ -70,11 +63,11 @@ class HighIceTelegramService
 
     /**
      * @param mixed $chatId
-     * @return HighIceTelegramService
+     * @return $this
      */
-    public function setChatId(mixed $chatId): HighIceTelegramService
+    public function setChatId(mixed $chatId): self
     {
-        if (is_null($this->infoBot)) {
+        if (empty($this->infoBot['token'])) {
             $this->setInfoBot(config('telegram_service.bots.' . config('telegram_service.default_bot')));
         }
 
@@ -82,12 +75,8 @@ class HighIceTelegramService
         return $this;
     }
 
-
     /**
-     * Send only message
-     *
      * @return void
-     * @throws ConnectionException
      */
     public function sendMessage(): void
     {
@@ -97,10 +86,7 @@ class HighIceTelegramService
     }
 
     /**
-     * Update text message
-     *
      * @return void
-     * @throws ConnectionException
      */
     public function editMessageText(): void
     {
@@ -110,10 +96,7 @@ class HighIceTelegramService
     }
 
     /**
-     * Send delete message
-     *
      * @return void
-     * @throws ConnectionException
      */
     public function deleteMessage(): void
     {
@@ -123,16 +106,19 @@ class HighIceTelegramService
     }
 
     /**
-     * Send delete message
-     *
      * @return void
-     * @throws ConnectionException
      */
     public function deleteLastMessage(): void
     {
         $chatId = $this->params['chat_id'] ?? $this->chatId ?? null;
-        $lastMessageId = ServiceTelegramOwnerMessage::query()->where('chat_id', $chatId)->latest()->first()?->message_id ?? null;
-        if(!is_null($lastMessageId)) {
+        if (!$chatId) return;
+
+        $lastMessageId = ServiceTelegramOwnerMessage::query()
+            ->where('chat_id', $chatId)
+            ->latest('id')
+            ->value('message_id');
+
+        if ($lastMessageId) {
             $this->params['message_id'] = $lastMessageId;
             $this->partUrl = '/deleteMessage';
             $this->sendRequest();
@@ -140,10 +126,7 @@ class HighIceTelegramService
     }
 
     /**
-     * send callback
-     *
      * @return void
-     * @throws ConnectionException
      */
     public function sendCallback(): void
     {
@@ -153,61 +136,27 @@ class HighIceTelegramService
     }
 
     /**
-     * send photo
-     *
-     * params:
-     *  caption (String) -
-     *  parse_mode -
-     *  caption_entities -
-     *  disable_notification (Boolean) -
-     *  protect_content (Boolean) -
-     *  reply_to_message_id (Integer) -
-     *  reply_markup -
-     *
      * @return void
-     * @throws ConnectionException
      */
     public function sendPhoto(): void
     {
         if (!$this->isValidated(['photo'])) return;
-
         $this->partUrl = '/sendPhoto';
         $this->sendRequest();
     }
 
     /**
-     * send document
-     *
-     * params:
-     *  document*
-     *  caption (String) -
-     *  parse_mode -
-     *  caption_entities -
-     *  disable_notification (Boolean) -
-     *  protect_content (Boolean) -
-     *  reply_to_message_id (Integer) -
-     *  reply_markup -
-     *
      * @return void
-     * @throws ConnectionException
      */
     public function sendDocument(): void
     {
         if (!$this->isValidated(['document'])) return;
-
         $this->partUrl = '/sendDocument';
         $this->sendRequest();
     }
 
     /**
-     * Send location
-     *
-     * params:
-     * latitude*
-     * longitude*
-     *
      * @return void
-     * @throws ConnectionException
      */
     public function sendLocation(): void
     {
@@ -217,16 +166,14 @@ class HighIceTelegramService
     }
 
     /**
-     * Send QR
-     *
      * @return void
-     * @throws ConnectionException
      */
     public function sendQR(): void
     {
         if (!$this->isValidated(['text'])) return;
+
         $sizeQr = $this->params['size_qr'] ?? '250x250';
-        $this->params['photo'] = 'https://api.qrserver.com/v1/create-qr-code/?size=' . $sizeQr . '&data=' . $this->params['text'];
+        $this->params['photo'] = "https://api.qrserver.com/v1/create-qr-code/?size={$sizeQr}&data=" . urlencode($this->params['text']);
         $this->partUrl = '/sendPhoto';
         $this->sendRequest();
     }
@@ -241,106 +188,109 @@ class HighIceTelegramService
 
     /**
      * @param array $params
-     * @return HighIceTelegramService
+     * @return $this
      */
-    public function setParams(array $params): HighIceTelegramService
+    public function setParams(array $params): self
     {
         $params['chat_id'] = $this->chatId ?? $params['chat_id'] ?? null;
         $this->params = $params;
         return $this;
     }
 
-
     /**
-     * Send telegram api request
-     *
      * @return void
-     * @throws ConnectionException
      */
     private function sendRequest(): void
     {
-        if (!isset($this->params['chat_id'])) return;
+        if (empty($this->params['chat_id'])) return;
 
-        $timeout = $this?->infoBot['timeout'] ?? 15;
-        $sendRequest = Http::timeout($timeout);
-        if(!is_null($this->infoBot['proxy_url'])) {
-            $sendRequest->withOptions([
-                'proxy' => $this->infoBot['proxy_url']
-            ]);
+        $client = Http::timeout($this->infoBot['timeout'] ?? 15);
+
+        if (!empty($this->infoBot['proxy_url'])) {
+            $client->withOptions(['proxy' => $this->infoBot['proxy_url']]);
         }
-        $this->response = $sendRequest->post($this->infoBot['main_telegram_server_url'] . '/bot' . $this->infoBot['token'] . $this->partUrl, $this->params);
-        $this->saveAnswer($this->response);
+
+        $url = "{$this->infoBot['main_telegram_server_url']}/bot{$this->infoBot['token']}{$this->partUrl}";
+
+        try {
+            $this->response = $client->post($url, $this->params);
+
+            $this->partUrl = '';
+
+            $this->saveAnswer($this->response->json());
+        } catch (\Exception $e) {
+            Log::error("Telegram SendRequest Error: " . $e->getMessage());
+        }
     }
 
-
     /**
-     * @return string|null|array
+     * @return string|null
      */
-    public function getUrlFile(): string|null|array
+    public function getUrlFile(): ?string
     {
         if (!$this->isValidated(['file_id'])) return null;
-        $infoFile = Http::post($this->infoBot['main_telegram_server_url'] . '/bot' . $this->infoBot['token'] . '/getFile?file_id=' . $this->params['file_id']);
-        if ($infoFile['ok'] && isset($infoFile['result']['file_path'])) {
-            return $this->infoBot['main_telegram_server_url'] . "/file/bot" . $this->infoBot['token'] . "/{$infoFile['result']['file_path']}";
+
+        $url = "{$this->infoBot['main_telegram_server_url']}/bot{$this->infoBot['token']}/getFile";
+        $response = Http::get($url, ['file_id' => $this->params['file_id']]);
+
+        if ($response->successful() && $response->json('ok')) {
+            $filePath = $response->json('result.file_path');
+            return "{$this->infoBot['main_telegram_server_url']}/file/bot{$this->infoBot['token']}/{$filePath}";
         }
+
         return null;
     }
 
-
     /**
-     * @param $arrayRequiredParams
+     * @param array $requiredParams
      * @return bool
      */
-    private function isValidated($arrayRequiredParams): bool
+    private function isValidated(array $requiredParams): bool
     {
-        foreach ($arrayRequiredParams as $param) {
-            if (!isset($this->params[$param])) {
-                return false;
-            }
-        }
-        return true;
+        return Arr::has($this->params, $requiredParams);
     }
 
     /**
-     * @param $answer
+     * @param array|null $answer
      * @return void
      */
-    public function saveAnswer($answer): void
+    public function saveAnswer(?array $answer): void
     {
-        if (!is_null($answer) && isset($answer['result']['message_id'])) {
-            $this->sendedMessageId = intval($answer['result']['message_id']) ?? null;
-            if (!is_null($this->saveModelSentedMessage)) {
-                try {
-                    $this->saveModelSentedMessage->{$this->fieldSaveModelSentedMessage} = $this->sendedMessageId;
-                    $this->saveModelSentedMessage->save();
-                } catch (\Exception $exception) {
-                    Log::error($exception->getMessage());
-                }
+        if (empty($answer['result']['message_id'])) {
+            return;
+        }
+
+        $this->sendedMessageId = (int) $answer['result']['message_id'];
+
+        if ($this->saveModelSentedMessage) {
+            try {
+                $this->saveModelSentedMessage->update([
+                    $this->fieldSaveModelSentedMessage => $this->sendedMessageId
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Failed to save Sent Message ID: " . $e->getMessage());
             }
         }
 
-        try {
-            if (!(isset($this->infoBot['is_save_answer']) && $this->infoBot['is_save_answer'] && isset($answer['result']['message_id']) && !is_null($answer) && isset($answer['ok']))) {
-                return;
-            }
+        if (empty($this->infoBot['is_save_answer']) || empty($answer['ok'])) {
+            return;
+        }
 
-            if (!is_null($this->owner)) {
-                $this->owner->ownerTelegramMessages()->create([
-                    'message_id' => $answer['result']['message_id'],
-                    'bot_key' => $this->hashBotToken() ?? null,
-                    'chat_id' => $answer['result']['chat']['id'],
-                    'other_info' => $answer['result'],
-                ]);
+        $payload = [
+            'message_id' => $this->sendedMessageId,
+            'bot_key' => $this->hashBotToken(),
+            'chat_id' => $answer['result']['chat']['id'],
+            'other_info' => $answer['result'],
+        ];
+
+        try {
+            if ($this->owner) {
+                $this->owner->ownerTelegramMessages()->create($payload);
             } else {
-                ServiceTelegramOwnerMessage::query()->create([
-                    'message_id' => $answer['result']['message_id'],
-                    'bot_key' => $this->hashBotToken() ?? null,
-                    'chat_id' => $answer['result']['chat']['id'],
-                    'other_info' => $answer['result'],
-                ]);
+                ServiceTelegramOwnerMessage::query()->create($payload);
             }
-        } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
+        } catch (\Exception $e) {
+            Log::error("Failed to save Answer to OwnerMessage: " . $e->getMessage());
         }
     }
 
@@ -353,28 +303,27 @@ class HighIceTelegramService
     }
 
     /**
-     * @param mixed $owner
-     * @return HighIceTelegramService
+     * @param mixed|null $owner
+     * @return $this
      */
-    public function setOwner(mixed $owner = null): HighIceTelegramService
+    public function setOwner(mixed $owner = null): self
     {
         $this->owner = $owner;
         return $this;
     }
 
-
     /**
-     * Получаем хеш токена
-     *
      * @return string
      */
     public function hashBotToken(): string
     {
+        if (!empty($this->infoBot['is_new_save_key_bot'])) {
+            return $this->infoBot['name_bot'];
+        }
         return md5($this->infoBot['token']);
     }
 
     /**
-     * Получаем ID отправленного сообщения
      * @return int|null
      */
     public function getSendedMessageId(): ?int
@@ -382,13 +331,12 @@ class HighIceTelegramService
         return $this->sendedMessageId;
     }
 
-
     /**
-     * @param null $saveModelSentedMessage
+     * @param $saveModelSentedMessage
      * @param string $fieldSaveModelSentedMessage
-     * @return HighIceTelegramService
+     * @return $this
      */
-    public function setSaveModelSentedMessage($saveModelSentedMessage, string $fieldSaveModelSentedMessage = 'message_id'): HighIceTelegramService
+    public function setSaveModelSentedMessage($saveModelSentedMessage, string $fieldSaveModelSentedMessage = 'message_id'): self
     {
         $this->fieldSaveModelSentedMessage = $fieldSaveModelSentedMessage;
         $this->saveModelSentedMessage = $saveModelSentedMessage;
@@ -396,11 +344,10 @@ class HighIceTelegramService
     }
 
     /**
-     * @return null
+     * @return mixed
      */
-    public function getResponse()
+    public function getResponse(): mixed
     {
         return $this->response;
     }
-
 }

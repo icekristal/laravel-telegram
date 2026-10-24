@@ -2,7 +2,9 @@
 return [
     'bots' => [
         'first_bot' => [
+            'is_new_save_key_bot' => env('TELEGRAM_BOT_NEW_SAVE_KEY', true),
             'name_bot' => 'first_bot',
+            'secret_webhook_key' => env('TELEGRAM_BOT_SECRET_WEBHOOK_KEY'),
             'is_queue_handler' => env('TELEGRAM_BOT_IS_QUEUE_HANDLER', true),
             'is_save_database' => env('TELEGRAM_BOT_IS_SAVE_DATABASE', false),
             'is_technical_job' => env('TELEGRAM_BOT_IS_TECHNICAL_JOB', false),
@@ -41,5 +43,6 @@ return [
     'default_bot' => 'first_bot',
 
     'is_enable_webhook_cache' => env('TELEGRAM_BOT_IS_WEBHOOK_CACHE', false),
+    'webhook_ttl' => env('TELEGRAM_BOT_WEBHOOK_TTL', 20),
 
 ];

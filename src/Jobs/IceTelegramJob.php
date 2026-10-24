@@ -11,102 +11,173 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use JsonException;
 
 class IceTelegramJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public array $infoBot = [];
-    public $request;
-    public string $message;
+    public array $request;
+    public string $message = '';
 
-    /**
-     *
-     *
-     * @return void
-     */
-    public function __construct($request, $infoBot)
+    public function __construct(array $request, array $infoBot)
     {
         $this->request = $request;
         $this->infoBot = $infoBot;
     }
 
     /**
-     *
-     *
      * @return void
      * @throws ConnectionException
+     * @throws JsonException
      */
     public function handle(): void
     {
         $telegram = new IceTelegramService($this->infoBot);
         $telegram->handle($this->request);
 
-        if ($this->infoBot['is_save_database'] && isset($telegram->from['id']) && $telegram->from['id'] > 0) {
-            ServiceTelegram::query()->updateOrCreate([
+        // Если не удалось определить пользователя или чат - прекращаем обработку
+        if (empty($telegram->from['id'])) {
+            return;
+        }
+
+        $this->saveUserToDatabase($telegram);
+
+        if ($this->shouldIgnoreGroupMessage($telegram)) {
+            return;
+        }
+
+        $infoAnswerUser = $this->getAnswerInfo($telegram);
+
+        $this->sendResponses($telegram, $infoAnswerUser);
+    }
+
+    /**
+     * Сохраняет или обновляет пользователя в БД, если это разрешено конфигурацией
+     */
+    private function saveUserToDatabase(IceTelegramService $telegram): void
+    {
+        if (empty($this->infoBot['is_save_database']) || $telegram->from['id'] <= 0) {
+            return;
+        }
+
+        ServiceTelegram::query()->updateOrCreate(
+            [
                 'chat_id' => $telegram->from['id'],
                 'bot_key' => IceTelegram::setInfoBot($this->infoBot)->hashBotToken(),
-            ], [
+            ],
+            [
                 'username' => $telegram->from['username'] ?? null,
                 'alias' => $telegram->from['alias'] ?? null,
-            ]);
+            ]
+        );
+    }
+
+    /**
+     * Проверяет, нужно ли проигнорировать сообщение в групповом чате
+     */
+    private function shouldIgnoreGroupMessage(IceTelegramService $telegram): bool
+    {
+        if (!$telegram->isGroupChat || $telegram->typeInfo === 'message_reaction') {
+            return false;
         }
 
         $checkConfig = $this->infoBot['is_send_answer_group_only_entities_bot'] ?? true;
 
-        if ($telegram->isGroupChat && $telegram->typeInfo != 'message_reaction') {
-            if ($checkConfig && !$telegram->isEntitiesBot) {
-                return;
-            }
+        return $checkConfig && !$telegram->isEntitiesBot;
+    }
+
+    /**
+     * Определяет ответ пользователю на основе типа входящего события
+     */
+    private function getAnswerInfo(IceTelegramService $telegram): array
+    {
+        if (!empty($this->infoBot['is_technical_job'])) {
+            return ['only_message' => __('telegram_service.technical_work')];
         }
 
-        $infoAnswerUser = [];
-        if ($this->infoBot['is_technical_job']) {
-            $infoAnswerUser['only_message'] = __('telegram_service.technical_work');
-        } else {
-            $infoAnswerUser = match ($telegram->type) {
-                'video' => !is_null($this->infoBot['method_messages']['video']) ? (new $this->infoBot['method_messages']['video']($telegram, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
-                'video_note' => !is_null($this->infoBot['method_messages']['video_note']) ? (new $this->infoBot['method_messages']['video_note']($telegram, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
-                'voice' => !is_null($this->infoBot['method_messages']['voice']) ? (new $this->infoBot['method_messages']['voice']($telegram, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
-                'photo' => !is_null($this->infoBot['method_messages']['photo']) ? (new $this->infoBot['method_messages']['photo']($telegram, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
-                'document' => !is_null($this->infoBot['method_messages']['document']) ? (new $this->infoBot['method_messages']['document']($telegram, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
-                'text' => !is_null($this->infoBot['method_messages']['text']) ? (new $this->infoBot['method_messages']['text']($telegram, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
-                'location' => !is_null($this->infoBot['method_messages']['location']) ? (new $this->infoBot['method_messages']['location']($telegram, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->data),
-                'callback_query' => !is_null($this->infoBot['method_callback_query']) ? (new $this->infoBot['method_callback_query']($telegram, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->callbackQuery),
-                'message_reaction' => !is_null($this->infoBot['method_message_reaction']) ? (new $this->infoBot['method_message_reaction']($telegram, $this->infoBot))->getResult() : $this->defaultAnswer($telegram->messageReaction),
-                default => []
-            };
+        if (empty($telegram->type)) {
+            return [];
         }
 
+        $methodKey = in_array($telegram->type, ['callback_query', 'message_reaction'], true)
+            ? "method_{$telegram->type}"
+            : 'method_messages';
+
+        $handlerClass = is_array($this->infoBot[$methodKey] ?? null)
+            ? ($this->infoBot[$methodKey][$telegram->type] ?? null)
+            : ($this->infoBot[$methodKey] ?? null);
+
+        $payload = match ($telegram->type) {
+            'callback_query' => $telegram->callbackQuery,
+            'message_reaction' => $telegram->messageReaction,
+            default => $telegram->data,
+        };
+
+        if ($handlerClass && class_exists($handlerClass)) {
+            return (new $handlerClass($telegram, $this->infoBot))->getResult();
+        }
+
+        return $this->defaultAnswer($payload);
+    }
+
+    /**
+     * Формирует базовый набор параметров для отправки сообщений, исключая дублирование
+     * @throws JsonException
+     */
+    private function buildBaseSendData(IceTelegramService $telegram, array $infoAnswerUser): array
+    {
+        $data = [
+            'chat_id' => $telegram->from['id'],
+            'is_edit_message' => $infoAnswerUser['is_reactive_edit_message'] ?? false,
+            'is_delete_last_message' => $infoAnswerUser['is_delete_last_message'] ?? false,
+            'disable_web_page_preview' => $infoAnswerUser['is_disable_web_page_preview'] ?? true,
+        ];
+
+        if (!empty($infoAnswerUser['parse_mode'])) {
+            $data['parse_mode'] = $infoAnswerUser['parse_mode'];
+        }
+
+        if (isset($infoAnswerUser['keyboard'])) {
+            $data['reply_markup'] = json_encode($infoAnswerUser['keyboard'], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+        }
+
+        return $data;
+    }
+
+
+    /**
+     * @param IceTelegramService $telegram
+     * @param array $infoAnswerUser
+     * @return void
+     * @throws ConnectionException
+     * @throws JsonException
+     */
+    private function sendResponses(IceTelegramService $telegram, array $infoAnswerUser): void
+    {
+        if (empty($infoAnswerUser)) {
+            return;
+        }
+
+        $baseData = $this->buildBaseSendData($telegram, $infoAnswerUser);
 
         if (isset($infoAnswerUser['only_message'])) {
-            $data = [
-                'chat_id' => $telegram->from['id'],
-                'text' => $infoAnswerUser['only_message'],
-                'is_edit_message' => $infoAnswerUser['is_reactive_edit_message'] ?? false,
-                'is_delete_last_message' => $infoAnswerUser['is_delete_last_message'] ?? false,
-                'disable_web_page_preview' => $infoAnswerUser['is_disable_web_page_preview'] ?? true,
-            ];
-            if(isset($infoAnswerUser['parse_mode']) && !is_null($infoAnswerUser['parse_mode'])) {
-                $data['parse_mode'] = $infoAnswerUser['parse_mode'];
-            }
+            $data = $baseData;
+            $data['text'] = $infoAnswerUser['only_message'];
+
             if ($telegram->isEntitiesBot) {
                 $data['reply_to_message_id'] = $telegram->messageId;
             }
+
             $telegram->sendMessage($data);
         }
 
         if (isset($infoAnswerUser['image'])) {
+            $data = $baseData;
             $data['caption'] = $infoAnswerUser['caption'] ?? null;
-            $data['is_edit_message'] = $infoAnswerUser['is_reactive_edit_message'] ?? false;
-            $data['is_delete_last_message'] = $infoAnswerUser['is_delete_last_message'] ?? false;
-            isset($infoAnswerUser['keyboard']) ? $data['reply_markup'] = json_encode($infoAnswerUser['keyboard']) : '';
-            if(isset($infoAnswerUser['parse_mode']) && !is_null($infoAnswerUser['parse_mode'])) {
-                $data['parse_mode'] = $infoAnswerUser['parse_mode'];
-            }
             $telegram->sendPhoto($data, $infoAnswerUser['image']);
         }
-
 
         if (isset($infoAnswerUser['file'])) {
             $telegram->sendDocument([
@@ -115,51 +186,40 @@ class IceTelegramJob implements ShouldQueue
         }
 
         if (isset($infoAnswerUser['message'])) {
-            $data = [
-                'chat_id' => $telegram->from['id'],
-                'text' => $infoAnswerUser['message'],
-                'is_edit_message' => $infoAnswerUser['is_reactive_edit_message'] ?? false,
-                'is_delete_last_message' => $infoAnswerUser['is_delete_last_message'] ?? false,
-                'disable_web_page_preview' => $infoAnswerUser['is_disable_web_page_preview'] ?? true,
-            ];
+            $data = $baseData;
+            $data['text'] = $infoAnswerUser['message'];
 
             if ($telegram->isEntitiesBot) {
                 $data['reply_to_message_id'] = $telegram->messageId;
             }
 
-            isset($infoAnswerUser['keyboard']) ? $data['reply_markup'] = json_encode($infoAnswerUser['keyboard']) : '';
-
-            if(isset($infoAnswerUser['parse_mode']) && !is_null($infoAnswerUser['parse_mode'])) {
-                $data['parse_mode'] = $infoAnswerUser['parse_mode'];
-            }
             $telegram->sendMessage($data);
         }
 
-
-
-        if ($telegram->type == 'callback_query' && isset($telegram->data['id'])) {
-            $paramCallback = [
+        if ($telegram->type === 'callback_query' && !empty($telegram->data['id'])) {
+            $paramCallback = array_merge($baseData, [
                 'callback_query_id' => $telegram->data['id'],
                 'text' => $infoAnswerUser['callback_message'] ?? ' ',
-                'show_alert' => boolval($infoAnswerUser['show_alert']) ?? false,
-                'is_edit_message' => $infoAnswerUser['is_reactive_edit_message'] ?? false,
-                'is_delete_last_message' => $infoAnswerUser['is_delete_last_message'] ?? false,
-                'disable_web_page_preview' => $infoAnswerUser['is_disable_web_page_preview'] ?? true,
-                'chat_id' => $telegram->from['id'],
-            ];
+                'show_alert' => (bool)($infoAnswerUser['show_alert'] ?? false),
+            ]);
 
             if (isset($infoAnswerUser['url'])) {
                 $paramCallback['url'] = (string)$infoAnswerUser['url'];
             }
+
             if (isset($infoAnswerUser['cache_time'])) {
-                $paramCallback['cache_time'] = intval($infoAnswerUser['cache_time']);
+                $paramCallback['cache_time'] = (int)$infoAnswerUser['cache_time'];
             }
 
             $telegram->sendCallback($paramCallback);
         }
     }
 
-    private function defaultAnswer($data): array
+    /**
+     * @param mixed $data
+     * @return array
+     */
+    private function defaultAnswer(mixed $data): array
     {
         return [];
     }
