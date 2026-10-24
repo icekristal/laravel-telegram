@@ -61,7 +61,7 @@ class IceTelegramService
         $this->processChatData();
         $this->determineMessageType();
 
-        $this->owner = ServiceTelegram::query()->where('chat_id', $this->from['id'])->value('owner');
+        $this->owner = ServiceTelegram::query()->where('chat_id', $this->from['id'])?->first()?->owner ?? null;
 
         IceTelegram::setInfoBot($this->infoBot)->setOwner($this->owner)->saveAnswer($data);
         app()->setLocale($this->from['language_code'] ?? 'ru');
