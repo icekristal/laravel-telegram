@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace Icekristal\LaravelTelegram\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\Pool;

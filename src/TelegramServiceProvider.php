@@ -2,12 +2,12 @@
 
 namespace Icekristal\LaravelTelegram;
 
-use App\Console\Commands\PollingCommand;
+use Icekristal\LaravelTelegram\Console\Commands\PollingCommand;
 use Icekristal\LaravelTelegram\Services\DeeplinkService;
 use Icekristal\LaravelTelegram\Services\HighIceTelegramService;
 use Illuminate\Support\ServiceProvider;
-use WebhookRemoveCommand;
-use WebhookSetCommand;
+use Icekristal\LaravelTelegram\Console\Commands\WebhookRemoveCommand;
+use Icekristal\LaravelTelegram\Console\Commands\WebhookSetCommand;
 
 class TelegramServiceProvider extends ServiceProvider
 {

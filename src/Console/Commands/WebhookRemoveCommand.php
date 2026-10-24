@@ -1,5 +1,5 @@
 <?php
-
+namespace Icekristal\LaravelTelegram\Console\Commands;
 use Illuminate\Console\Command;
 
 class WebhookRemoveCommand extends Command
