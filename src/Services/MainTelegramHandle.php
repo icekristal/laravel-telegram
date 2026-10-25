@@ -20,6 +20,7 @@ class MainTelegramHandle
     public $keyboard = null;
     public $image = null;
     public $file = null;
+    public $text = null;
     public $parseMode = null;
 
     public bool $showAlert = false;
@@ -37,6 +38,7 @@ class MainTelegramHandle
 
     public function getResult(): array
     {
+        $this->handle();
         return [
             'only_message' => $this->onlyMessage,
             'only_reaction' => $this->onlyReaction,

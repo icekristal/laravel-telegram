@@ -8,6 +8,11 @@ class PhotoHandle extends MainTelegramHandle
     public function __construct($telegramService, $botInfo)
     {
         parent::__construct($telegramService, $botInfo);
+
+    }
+
+    public function handle(): void
+    {
         $infoPhoto = $this->telegramService->data['photo'] ?? null;
         if (is_array($infoPhoto)) {
             $smallPhoto = $infoPhoto[0];

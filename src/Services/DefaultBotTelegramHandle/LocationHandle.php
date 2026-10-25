@@ -9,6 +9,11 @@ class LocationHandle extends MainTelegramHandle
     public function __construct($telegramService, $botInfo)
     {
         parent::__construct($telegramService, $botInfo);
+
+    }
+
+    public function handle(): void
+    {
         $infoLocation = $this->telegramService->data['location'] ?? null;
         $latitude = $infoLocation['latitude'] ?? "";
         $longitude = $infoLocation['longitude'] ?? "";

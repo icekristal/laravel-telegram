@@ -8,6 +8,11 @@ class VideoNoteHandle extends MainTelegramHandle
     public function __construct($telegramService, $botInfo)
     {
         parent::__construct($telegramService, $botInfo);
+
+    }
+
+    public function handle(): void
+    {
         $infoVideoNote = $this->telegramService->data['video_note'] ?? null;
         $fileName = $infoVideoNote['file_name'] ?? "";
         $mimeType = $infoVideoNote['mime_type'] ?? "";

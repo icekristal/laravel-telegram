@@ -2,30 +2,27 @@
 
 namespace App\Services\DefaultBotTelegramHandle;
 
+use App\Services\Clients;
 use Icekristal\LaravelTelegram\Facades\TelegramDeeplinkAction;
 use Icekristal\LaravelTelegram\Services\MainTelegramHandle;
 use Illuminate\Support\Str;
 
 class TextTelegramHandle extends MainTelegramHandle
 {
-    public $text = '';
+    public mixed $chatId = null;
+
     public function __construct($telegramService, $botInfo)
     {
         parent::__construct($telegramService, $botInfo);
-        $this->text = $this->telegramService->data['text'] ?? null;
+        $this->text = $this->telegramService->data['text'] ?? '';
 
-        if (!is_null($this->text) && Str::startsWith($this->text, '/start ')) {
-            $start = trim(Str::after($this->text, '/start '));
+    }
 
-            if ($decoded = TelegramDeeplinkAction::find($start)?->decoded) {
-                $start = $decoded;
-            }
-
-            if (Str::containsAll($start, ['OWNER-S', 'OWNER-E'])) {
-                $messageOwnerId =  Str::before(Str::after($start, 'OWNER-S'), 'OWNER-E');
-            } else {
-                $array = explode('-', $start);
-            }
+    public function handle(): void
+    {
+        $this->chatId = $telegramService->from['id'] ?? null;
+        if (Str::startsWith($this->text, '/start')) {
+            return;
         }
     }
 }

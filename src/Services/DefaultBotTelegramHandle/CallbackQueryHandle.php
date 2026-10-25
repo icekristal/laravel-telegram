@@ -3,6 +3,7 @@
 namespace App\Services\DefaultBotTelegramHandle;
 
 use Icekristal\LaravelTelegram\Services\MainTelegramHandle;
+use Illuminate\Support\Str;
 
 class CallbackQueryHandle extends MainTelegramHandle
 {
@@ -11,5 +12,10 @@ class CallbackQueryHandle extends MainTelegramHandle
     {
         parent::__construct($telegramService, $botInfo);
         $this->callbackQuery = $this->telegramService->callbackQuery['data'] ?? '';
+    }
+
+    public function handle(): void
+    {
+
     }
 }

@@ -9,10 +9,13 @@ class DocumentHandle extends MainTelegramHandle
     public function __construct($telegramService, $botInfo)
     {
         parent::__construct($telegramService, $botInfo);
+
+    }
+
+    public function handle(): void
+    {
         $document = $this->telegramService->data['document'] ?? '';
         $fileName = $document['file_name'] ?? '';
         $mimeType = $document['mime_type'] ?? '';
-
-        $saveAndGetPathFile = (new IceTelegramService($botInfo))->getPathFile($document['file_id']);
     }
 }
