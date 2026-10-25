@@ -7,6 +7,7 @@ use Icekristal\LaravelTelegram\Models\ServiceTelegram;
 use Icekristal\LaravelTelegram\Models\ServiceTelegramOwnerMessage;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class IceTelegramService
@@ -239,17 +240,22 @@ class IceTelegramService
         IceTelegram::setInfoBot($this->infoBot)->setParams($params)->sendDocument();
     }
 
+
     /**
      * @param $fileId
      * @return bool|string
      */
     public function getPathFile($fileId): bool|string
     {
+        if (empty($this->infoBot['is_save_files']) || !$this->infoBot['is_save_files']) {
+            return false;
+        }
+
         $response = Http::post("{$this->infoBot['main_telegram_server_url']}/bot{$this->infoBot['token']}/getFile", [
             'file_id' => $fileId
         ]);
 
-        if (!$response->successful() || !$response->json('ok') || empty($this->infoBot['is_save_files'])) {
+        if (!$response->successful() || empty($response->json('ok'))) {
             return false;
         }
 
@@ -258,37 +264,63 @@ class IceTelegramService
 
         $extension = pathinfo($resultPath, PATHINFO_EXTENSION);
         $fileName = "t_" . time() . "_" . Str::random(10) . "." . $extension;
-        $fullPath = rtrim($this->infoBot['path_save_files'], '/') . '/' . $fileName;
+
+        $directory = trim($this->infoBot['path_save_files'] ?? 'telegram', '/');
+        $relativePath = "{$directory}/{$fileName}";
+
+        Storage::disk('local')->makeDirectory($directory);
+
+        $fullPath = Storage::disk('local')->path($relativePath);
 
         if (!empty($this->infoBot['is_active_log'])) {
             info("WebhookController_Telegram _ FILE: Start downloading", ['url' => $urlFile, 'destination' => $fullPath]);
         }
 
         try {
-            $fileContent = Http::timeout(60)->get($urlFile)->body();
-            file_put_contents($fullPath, $fileContent);
-            return $fullPath;
+            $downloadResponse = Http::timeout(60)->sink($fullPath)->get($urlFile);
+
+            if ($downloadResponse->successful()) {
+                return $fullPath;
+            }
+
+            return false;
         } catch (\Exception $e) {
             if (!empty($this->infoBot['is_active_log'])) {
                 info("WebhookController_Telegram _ FILE: Download failed", ['message' => $e->getMessage()]);
             }
+
+            if (file_exists($fullPath)) {
+                unlink($fullPath);
+            }
+
             return false;
         }
     }
 
     /**
-     * @param $fileId
+     * @param string $fileId
      * @return string|null
      */
-    public function getUrlFile($fileId): ?string
+    public function getUrlFile(string $fileId): ?string
     {
-        $response = Http::get("{$this->infoBot['main_telegram_server_url']}/bot{$this->infoBot['token']}/getFile", [
-            'file_id' => $fileId
-        ]);
+        try {
+            $response = Http::timeout(10)->get("{$this->infoBot['main_telegram_server_url']}/bot{$this->infoBot['token']}/getFile", [
+                'file_id' => $fileId
+            ]);
 
-        if ($response->successful() && $response->json('ok')) {
-            $filePath = $response->json('result.file_path');
-            return "{$this->infoBot['main_telegram_server_url']}/file/bot{$this->infoBot['token']}/{$filePath}";
+            if ($response->successful() && $response->json('ok')) {
+                $filePath = $response->json('result.file_path');
+                return "{$this->infoBot['main_telegram_server_url']}/file/bot{$this->infoBot['token']}/{$filePath}";
+            }
+
+            if (!empty($this->infoBot['is_active_log'])) {
+                info("WebhookController_Telegram _ FILE URL: Telegram API error", ['response' => $response->json()]);
+            }
+
+        } catch (\Exception $e) {
+            if (!empty($this->infoBot['is_active_log'])) {
+                info("WebhookController_Telegram _ FILE URL: Request failed", ['message' => $e->getMessage()]);
+            }
         }
 
         return null;
