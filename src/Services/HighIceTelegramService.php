@@ -81,6 +81,7 @@ class HighIceTelegramService
     public function sendMessage(): void
     {
         if (!$this->isValidated(['text'])) return;
+        if(is_null($this->params['text'])) return;
         $this->partUrl = '/sendMessage';
         $this->sendRequest();
     }
@@ -91,6 +92,7 @@ class HighIceTelegramService
     public function editMessageText(): void
     {
         if (!$this->isValidated(['text', 'message_id'])) return;
+        if(is_null($this->params['text'])) return;
         $this->partUrl = '/editMessageText';
         $this->sendRequest();
     }
