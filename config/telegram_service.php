@@ -24,6 +24,7 @@ return [
             'main_telegram_server_url' => env('TELEGRAM_SERVER_URL', 'https://api.telegram.org'),
             'proxy_url' => env('TELEGRAM_PROXY', null),
             'timeout' => env('TELEGRAM_TIMEOUT', 30),
+            'connect_timeout' => env('TELEGRAM_CONNECT_TIMEOUT', 30),
 
 
             'method_messages' => [

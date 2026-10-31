@@ -206,7 +206,7 @@ class HighIceTelegramService
     {
         if (empty($this->params['chat_id'])) return;
 
-        $client = Http::timeout($this->infoBot['timeout'] ?? 15);
+        $client = Http::timeout($this->infoBot['timeout'] ?? 15)->connectTimeout($this->infoBot['connect_timeout'] ?? 30);
 
         if (!empty($this->infoBot['proxy_url'])) {
             $client->withOptions(['proxy' => $this->infoBot['proxy_url']]);
